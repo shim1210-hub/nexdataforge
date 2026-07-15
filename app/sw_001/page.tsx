@@ -1,10 +1,11 @@
-import Footer from "@/components/Footer";
 import { readFileSync } from "fs";
 import path from "path";
 import { TextDecoder } from "util";
+import Sw001Footer from "./Sw001Footer";
 import Sw001Client, {
   type CyberCrimeData,
   type PlaceCrimeData,
+  type RegionCrimeData,
   type TimeCrimeData,
 } from "./Sw001Client";
 
@@ -16,6 +17,7 @@ const cyberCsvPath = path.join(
   publicDataPath,
   "3_경찰청_연도별 사이버 범죄 통계 현황_20231231.csv",
 );
+const regionCsvPath = path.join(publicDataPath, "4_경찰청_범죄 발생 지역별 통계_20241231.csv");
 
 function readCsv(filePath: string) {
   const csv = new TextDecoder("euc-kr").decode(readFileSync(filePath));
@@ -44,6 +46,7 @@ function readTimeCrimeData(): TimeCrimeData {
     total: rows.reduce((sum, row) => sum + toNumber(row[index + 11]), 0),
   }));
   const majorCategoryTotals = new Map<string, number>();
+  const majorCategoryDayTotals = new Map<string, number[]>();
 
   rows.forEach((row) => {
     const knownTimeTotal = timeHeaders.reduce(
@@ -52,6 +55,12 @@ function readTimeCrimeData(): TimeCrimeData {
     );
 
     majorCategoryTotals.set(row[0], (majorCategoryTotals.get(row[0]) ?? 0) + knownTimeTotal);
+
+    const currentDayTotals = majorCategoryDayTotals.get(row[0]) ?? dayHeaders.map(() => 0);
+    dayHeaders.forEach((_label, index) => {
+      currentDayTotals[index] += toNumber(row[index + 11]);
+    });
+    majorCategoryDayTotals.set(row[0], currentDayTotals);
   });
 
   const knownTotal = timeTotals.reduce((sum, item) => sum + item.total, 0);
@@ -61,6 +70,23 @@ function readTimeCrimeData(): TimeCrimeData {
 
   return {
     dayTotals,
+    daySeriesOptions: [
+      {
+        dayTotals,
+        label: "전체",
+        total: dayTotals.reduce((sum, item) => sum + item.total, 0),
+      },
+      ...Array.from(majorCategoryDayTotals, ([label, totals]) => ({
+        dayTotals: dayHeaders.map((dayLabel, index) => ({
+          label: dayLabel,
+          total: totals[index],
+        })),
+        label,
+        total: totals.reduce((sum, value) => sum + value, 0),
+      }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5),
+    ],
     knownTotal,
     peakDay,
     peakTime,
@@ -150,19 +176,78 @@ function readCyberCrimeData(): CyberCrimeData {
   };
 }
 
+function splitRegionLabel(label: string) {
+  if (label === "세종시") {
+    return { city: "세종시", province: "세종시" };
+  }
+
+  const [province, ...cityParts] = label.split(" ");
+
+  return {
+    city: cityParts.join(" ") || province,
+    province,
+  };
+}
+
+function readRegionCrimeData(): RegionCrimeData {
+  const { headers, rows } = readCsv(regionCsvPath);
+  const regionHeaders = headers.slice(2);
+  const regionTotals = regionHeaders.map((label, index) => ({
+    label,
+    total: rows.reduce((sum, row) => sum + toNumber(row[index + 2]), 0),
+  }));
+  const domesticCities = regionTotals
+    .filter((item) => !item.label.startsWith("외국 "))
+    .map((item) => {
+      const { city, province } = splitRegionLabel(item.label);
+
+      return {
+        label: city,
+        province,
+        total: item.total,
+      };
+    });
+  const provinceTotalMap = new Map<string, number>();
+
+  domesticCities.forEach((city) => {
+    provinceTotalMap.set(city.province, (provinceTotalMap.get(city.province) ?? 0) + city.total);
+  });
+
+  const provinceTotals = Array.from(provinceTotalMap, ([label, total]) => ({ label, total })).sort(
+    (a, b) => b.total - a.total,
+  );
+  const topCities = domesticCities.sort((a, b) => b.total - a.total);
+
+  return {
+    cities: topCities,
+    domesticTotal: domesticCities.reduce((sum, city) => sum + city.total, 0),
+    foreignTotal: regionTotals
+      .filter((item) => item.label.startsWith("외국 "))
+      .reduce((sum, item) => sum + item.total, 0),
+    peakCity: topCities[0],
+    peakProvince: provinceTotals[0],
+    provinceTotals,
+    rowCount: rows.length,
+    sourceName: "경찰청 범죄 발생 지역별 통계",
+    topCities: topCities.slice(0, 20),
+  };
+}
+
 export default function Sw001Page() {
   const timeCrimeData = readTimeCrimeData();
   const placeCrimeData = readPlaceCrimeData();
   const cyberCrimeData = readCyberCrimeData();
+  const regionCrimeData = readRegionCrimeData();
 
   return (
     <>
       <Sw001Client
         cyberCrimeData={cyberCrimeData}
         placeCrimeData={placeCrimeData}
+        regionCrimeData={regionCrimeData}
         timeCrimeData={timeCrimeData}
       />
-      <Footer />
+      <Sw001Footer />
     </>
   );
 }
