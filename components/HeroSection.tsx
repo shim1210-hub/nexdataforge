@@ -11,9 +11,7 @@ export default function HeroSection() {
         <p className="eyebrow">PUBLIC DATA · WEB SERVICE · DATA VISUALIZATION</p>
 
         <h1>
-          데이터를 연결하여
-          <br />
-          <span>생활에 필요한 서비스</span>를 만듭니다.
+          데이터를 연결하여 <span>고객들의 생활에 필요한 서비스를 만듭니다.</span>
         </h1>
 
         <p className="hero-description">

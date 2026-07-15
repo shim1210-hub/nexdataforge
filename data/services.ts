@@ -24,7 +24,7 @@ export const services: Service[] = [
     ],
     status: "개발 예정",
     href: "/sw_001",
-    enabled: false,
+    enabled: true,
     icon: "🛡️",
   },
   {
