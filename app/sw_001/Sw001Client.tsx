@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Sw001ViewId = "main" | "time" | "place" | "cyber" | "map";
+type Sw001ViewId = "main" | "time" | "place" | "cyber" | "map" | "kakao";
 
 type DataPoint = {
   label: string;
@@ -74,6 +74,7 @@ export type RegionCrimeData = {
 
 type Sw001ClientProps = {
   cyberCrimeData: CyberCrimeData;
+  kakaoJavascriptKey: string;
   placeCrimeData: PlaceCrimeData;
   regionCrimeData: RegionCrimeData;
   timeCrimeData: TimeCrimeData;
@@ -83,6 +84,34 @@ type MainOverviewProps = Pick<
   Sw001ClientProps,
   "cyberCrimeData" | "placeCrimeData" | "timeCrimeData"
 >;
+
+type KakaoLatLng = object;
+type KakaoMap = object;
+type KakaoMarker = object;
+
+type KakaoMaps = {
+  LatLng: new (lat: number, lng: number) => KakaoLatLng;
+  Map: new (
+    container: HTMLElement,
+    options: {
+      center: KakaoLatLng;
+      level: number;
+    },
+  ) => KakaoMap;
+  Marker: new (options: {
+    map: KakaoMap;
+    position: KakaoLatLng;
+  }) => KakaoMarker;
+  load: (callback: () => void) => void;
+};
+
+declare global {
+  interface Window {
+    kakao?: {
+      maps: KakaoMaps;
+    };
+  }
+}
 
 const sw001Views: Array<{
   id: Sw001ViewId;
@@ -94,6 +123,7 @@ const sw001Views: Array<{
   { id: "place", label: "장소별", title: "장소별" },
   { id: "cyber", label: "사이버별", title: "사이버별" },
   { id: "map", label: "지도검색", title: "지도검색(지역별 범죄)" },
+  { id: "kakao", label: "카카오지도", title: "카카오지도" },
 ];
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
@@ -190,6 +220,7 @@ function getPercent(value: number, max: number) {
 
 export default function Sw001Client({
   cyberCrimeData,
+  kakaoJavascriptKey,
   placeCrimeData,
   regionCrimeData,
   timeCrimeData,
@@ -237,6 +268,7 @@ export default function Sw001Client({
         {activeView.id === "place" && <PlaceCrimeDashboard data={placeCrimeData} />}
         {activeView.id === "cyber" && <CyberCrimeDashboard data={cyberCrimeData} />}
         {activeView.id === "map" && <RegionMapDashboard data={regionCrimeData} />}
+        {activeView.id === "kakao" && <KakaoMapScreen javascriptKey={kakaoJavascriptKey} />}
       </section>
     </main>
   );
@@ -806,5 +838,74 @@ function RankPanel({
         ))}
       </div>
     </section>
+  );
+}
+
+function KakaoMapScreen({ javascriptKey }: { javascriptKey: string }) {
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [mapStatus, setMapStatus] = useState<"idle" | "loading" | "ready" | "error">(
+    javascriptKey ? "loading" : "error",
+  );
+
+  useEffect(() => {
+    if (!javascriptKey || !mapContainerRef.current) {
+      setMapStatus("error");
+      return;
+    }
+
+    const renderMap = () => {
+      if (!window.kakao?.maps || !mapContainerRef.current) {
+        setMapStatus("error");
+        return;
+      }
+
+      const center = new window.kakao.maps.LatLng(36.5, 127.8);
+      const map = new window.kakao.maps.Map(mapContainerRef.current, {
+        center,
+        level: 13,
+      });
+
+      new window.kakao.maps.Marker({
+        map,
+        position: center,
+      });
+
+      setMapStatus("ready");
+    };
+
+    if (window.kakao?.maps) {
+      window.kakao.maps.load(renderMap);
+      return;
+    }
+
+    const scriptId = "kakao-map-sdk";
+    const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => window.kakao?.maps.load(renderMap), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${javascriptKey}&autoload=false`;
+    script.addEventListener("load", () => window.kakao?.maps.load(renderMap), { once: true });
+    script.addEventListener("error", () => setMapStatus("error"), { once: true });
+    document.head.appendChild(script);
+  }, [javascriptKey]);
+
+  return (
+    <div className="sw001-kakao-screen">
+      <div className="sw001-kakao-map" ref={mapContainerRef} />
+
+      {mapStatus !== "ready" && (
+        <div className="sw001-kakao-status">
+          {mapStatus === "loading" ? "카카오 지도를 불러오는 중입니다." : "카카오 지도 키를 확인해 주세요."}
+        </div>
+      )}
+    </div>
   );
 }

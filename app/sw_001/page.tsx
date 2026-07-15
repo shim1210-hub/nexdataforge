@@ -238,11 +238,13 @@ export default function Sw001Page() {
   const placeCrimeData = readPlaceCrimeData();
   const cyberCrimeData = readCyberCrimeData();
   const regionCrimeData = readRegionCrimeData();
+  const kakaoJavascriptKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JAVASCRIPT_KEY ?? "";
 
   return (
     <>
       <Sw001Client
         cyberCrimeData={cyberCrimeData}
+        kakaoJavascriptKey={kakaoJavascriptKey}
         placeCrimeData={placeCrimeData}
         regionCrimeData={regionCrimeData}
         timeCrimeData={timeCrimeData}
