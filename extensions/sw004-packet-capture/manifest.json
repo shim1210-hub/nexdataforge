@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "SW_004 Packet Capture",
+  "version": "0.2.0",
+  "description": "Capture browser request and response metadata for the local SW_004 packet monitor.",
+  "permissions": ["webRequest", "storage"],
+  "host_permissions": ["<all_urls>", "http://localhost:3000/*", "http://127.0.0.1:3000/*"],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "SW_004 Packet Capture"
+  }
+}

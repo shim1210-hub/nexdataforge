@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
-type Sw001ViewId = "main" | "time" | "place" | "cyber" | "map" | "kakao";
+type Sw001ViewId = "main" | "time" | "place" | "cyber" | "map" | "kakao" | "db";
 
 type DataPoint = {
   label: string;
@@ -72,8 +72,29 @@ export type RegionCrimeData = {
   topCities: RegionCityData[];
 };
 
+export type InsaDbData = {
+  columns: string[];
+  error?: string;
+  rows: Array<Record<string, string>>;
+  sourceName: string;
+  total: number;
+};
+
+type InsaFormState = {
+  birth: string;
+  dept_cd: string;
+  name: string;
+  reg_date: string;
+  seq: string;
+};
+
+type InsaMutationResponse = Pick<InsaDbData, "columns" | "rows" | "total"> & {
+  error?: string;
+};
+
 type Sw001ClientProps = {
   cyberCrimeData: CyberCrimeData;
+  insaDbData: InsaDbData;
   kakaoJavascriptKey: string;
   placeCrimeData: PlaceCrimeData;
   regionCrimeData: RegionCrimeData;
@@ -124,6 +145,7 @@ const sw001Views: Array<{
   { id: "cyber", label: "사이버별", title: "사이버별" },
   { id: "map", label: "지도검색", title: "지도검색(지역별 범죄)" },
   { id: "kakao", label: "카카오지도", title: "카카오지도" },
+  { id: "db", label: "디비연결", title: "디비연결" },
 ];
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
@@ -218,8 +240,39 @@ function getPercent(value: number, max: number) {
   return Math.max(6, Math.round((value / max) * 100));
 }
 
+function createEmptyInsaForm(): InsaFormState {
+  return {
+    birth: "",
+    dept_cd: "",
+    name: "",
+    reg_date: "",
+    seq: "",
+  };
+}
+
+function mapInsaRowToForm(row?: Record<string, string>): InsaFormState {
+  return {
+    birth: row?.birth ?? "",
+    dept_cd: row?.dept_cd ?? "",
+    name: row?.name ?? "",
+    reg_date: row?.reg_date ?? "",
+    seq: row?.seq ?? "",
+  };
+}
+
+async function parseInsaMutationResponse(response: Response) {
+  const result = (await response.json()) as InsaMutationResponse;
+
+  if (!response.ok || result.error) {
+    throw new Error(result.error ?? "DB 변경 중 오류가 발생했습니다.");
+  }
+
+  return result;
+}
+
 export default function Sw001Client({
   cyberCrimeData,
+  insaDbData,
   kakaoJavascriptKey,
   placeCrimeData,
   regionCrimeData,
@@ -269,6 +322,7 @@ export default function Sw001Client({
         {activeView.id === "cyber" && <CyberCrimeDashboard data={cyberCrimeData} />}
         {activeView.id === "map" && <RegionMapDashboard data={regionCrimeData} />}
         {activeView.id === "kakao" && <KakaoMapScreen javascriptKey={kakaoJavascriptKey} />}
+        {activeView.id === "db" && <InsaDbScreen data={insaDbData} />}
       </section>
     </main>
   );
@@ -838,6 +892,231 @@ function RankPanel({
         ))}
       </div>
     </section>
+  );
+}
+
+function InsaDbScreen({ data }: { data: InsaDbData }) {
+  const [columns, setColumns] = useState(data.columns);
+  const [form, setForm] = useState<InsaFormState>(() => createEmptyInsaForm());
+  const [isSaving, setIsSaving] = useState(false);
+  const [rows, setRows] = useState(data.rows);
+  const [selectedSeq, setSelectedSeq] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  const selectedRow = rows.find((row) => row.seq === selectedSeq);
+
+  function handleSelectRow(row: Record<string, string>) {
+    setSelectedSeq(row.seq ?? "");
+    setForm(mapInsaRowToForm(row));
+    setStatusMessage(`${row.name ?? "선택한 행"} 데이터를 선택했습니다.`);
+  }
+
+  function handleFormChange(field: keyof InsaFormState, value: string) {
+    setForm((currentForm) => ({
+      ...currentForm,
+      [field]: value,
+    }));
+  }
+
+  function resetForm() {
+    setSelectedSeq("");
+    setForm(createEmptyInsaForm());
+  }
+
+  async function requestInsaMutation(method: "DELETE" | "PATCH" | "POST", successMessage: string) {
+    setIsSaving(true);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch("/sw_001/api/insa", {
+        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method,
+      });
+      const result = await parseInsaMutationResponse(response);
+
+      setColumns(result.columns);
+      setRows(result.rows);
+      setStatusMessage(successMessage);
+
+      if (method === "DELETE" || method === "POST") {
+        resetForm();
+      }
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "DB 변경 중 오류가 발생했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await requestInsaMutation("POST", "신규 데이터를 등록했습니다.");
+  }
+
+  return (
+    <div className="sw001-dashboard sw001-db-screen">
+      <div className="sw001-dashboard-intro">
+        <div>
+          <p>{data.sourceName}</p>
+          <h2>insa 테이블 데이터</h2>
+          <span>
+            {data.error
+              ? "데이터베이스 연결 상태를 확인해 주세요."
+              : `조회된 ${formatNumber(rows.length)}개 행을 표시합니다.`}
+          </span>
+        </div>
+      </div>
+
+      {data.error ? (
+        <section className="sw001-data-panel sw001-db-message" aria-label="DB 연결 오류">
+          <div className="sw001-panel-heading">
+            <h3>DB 연결 실패</h3>
+            <span>insa 조회 오류</span>
+          </div>
+          <p>{data.error}</p>
+        </section>
+      ) : (
+        <>
+          <section className="sw001-data-panel" aria-label="insa 데이터 변경">
+            <div className="sw001-panel-heading">
+              <div>
+                <h3>데이터 변경</h3>
+                <span>
+                  {selectedRow
+                    ? `${selectedRow.name ?? "선택한 행"} 수정 가능`
+                    : "신규 입력 또는 행 선택 후 수정"}
+                </span>
+              </div>
+            </div>
+
+            <form className="sw001-db-form" onSubmit={handleSubmit}>
+              <label>
+                <span>SEQ</span>
+                <input
+                  onChange={(event) => handleFormChange("seq", event.target.value)}
+                  placeholder="신규 등록 시 비워두기"
+                  value={form.seq}
+                />
+              </label>
+
+              <label>
+                <span>부서코드</span>
+                <input
+                  onChange={(event) => handleFormChange("dept_cd", event.target.value)}
+                  placeholder="dept_cd"
+                  required
+                  value={form.dept_cd}
+                />
+              </label>
+
+              <label>
+                <span>이름</span>
+                <input
+                  onChange={(event) => handleFormChange("name", event.target.value)}
+                  placeholder="name"
+                  required
+                  value={form.name}
+                />
+              </label>
+
+              <label>
+                <span>생년월일</span>
+                <input
+                  onChange={(event) => handleFormChange("birth", event.target.value)}
+                  placeholder="birth"
+                  value={form.birth}
+                />
+              </label>
+
+              <label>
+                <span>등록일</span>
+                <input
+                  onChange={(event) => handleFormChange("reg_date", event.target.value)}
+                  placeholder="reg_date"
+                  value={form.reg_date}
+                />
+              </label>
+
+              <div className="sw001-db-actions">
+                <button disabled={isSaving} type="submit">
+                  신규
+                </button>
+                <button
+                  disabled={isSaving || !form.seq}
+                  onClick={() => requestInsaMutation("PATCH", "선택한 데이터를 수정했습니다.")}
+                  type="button"
+                >
+                  수정
+                </button>
+                <button
+                  disabled={isSaving || !form.seq}
+                  onClick={() => requestInsaMutation("DELETE", "선택한 데이터를 삭제했습니다.")}
+                  type="button"
+                >
+                  삭제
+                </button>
+                <button disabled={isSaving} onClick={resetForm} type="button">
+                  입력값 비우기
+                </button>
+              </div>
+            </form>
+
+            {statusMessage && (
+              <p className="sw001-db-status" role="status">
+                {statusMessage}
+              </p>
+            )}
+          </section>
+
+          <section className="sw001-data-panel" aria-label="insa 테이블 조회 결과">
+            <div className="sw001-panel-heading">
+              <h3>조회 결과</h3>
+              <span>최대 100건</span>
+            </div>
+
+            {rows.length === 0 ? (
+              <div className="sw001-db-empty">표시할 데이터가 없습니다.</div>
+            ) : (
+              <div className="sw001-db-table-wrap">
+                <table className="sw001-db-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">선택</th>
+                      {columns.map((column) => (
+                        <th key={column} scope="col">
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, rowIndex) => (
+                      <tr aria-selected={selectedSeq === row.seq} key={`${row.seq}-${rowIndex}`}>
+                        <td>
+                          <button
+                            className="sw001-db-select-button"
+                            onClick={() => handleSelectRow(row)}
+                            type="button"
+                          >
+                            선택
+                          </button>
+                        </td>
+                        {columns.map((column) => (
+                          <td key={column}>{row[column]}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+    </div>
   );
 }
 

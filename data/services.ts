@@ -39,7 +39,7 @@ export const services: Service[] = [
     ],
     status: "기획 중",
     href: "/sw_002",
-    enabled: false,
+    enabled: true,
     icon: "🛵",
   },
   {
@@ -54,7 +54,37 @@ export const services: Service[] = [
     ],
     status: "기획 중",
     href: "/sw_003",
-    enabled: false,
+    enabled: true,
     icon: "📊",
+  },
+  {
+    id: "SW_004",
+    title: "웹 패킷 분석",
+    description:
+      "다른 화면에서 발생하는 REQUEST를 실시간으로 수집하고 패킷 목록과 상세 정보를 확인하는 서비스입니다.",
+    features: [
+      "실시간 REQUEST 수집",
+      "HTTP 메서드별 필터링",
+      "패킷 상세 헤더 확인",
+    ],
+    status: "기획 중" as ServiceStatus,
+    href: "/sw_004",
+    enabled: true,
+    icon: "PKT",
+  },
+  {
+    id: "SW_005",
+    title: "웹 유틸 관리",
+    description:
+      "문자열 변환, 날짜 계산, URL 분석, 데이터 정리처럼 웹에서 자주 사용하는 유틸을 한곳에서 관리하는 서비스입니다.",
+    features: [
+      "유틸 카테고리 관리",
+      "자주 쓰는 도구 즐겨찾기",
+      "실행 이력과 상태 확인",
+    ],
+    status: "기획 중" as ServiceStatus,
+    href: "/sw_005",
+    enabled: true,
+    icon: "UTL",
   },
 ];

@@ -1,15 +1,29 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { TextDecoder } from "util";
+import { Client } from "pg";
 import Sw001Footer from "./Sw001Footer";
 import Sw001Client, {
   type CyberCrimeData,
+  type InsaDbData,
   type PlaceCrimeData,
   type RegionCrimeData,
   type TimeCrimeData,
 } from "./Sw001Client";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const publicDataPath = path.join(process.cwd(), "app", "sw_001", "publicdata");
+
+type PgClient = {
+  connect: () => Promise<unknown>;
+  end: () => Promise<void>;
+  query: (sql: string) => Promise<{
+    fields: Array<{ name: string }>;
+    rows: Array<Record<string, unknown>>;
+  }>;
+};
 
 const timeCsvPath = path.join(publicDataPath, "1_경찰청_범죄 발생 시간대 및 요일_20191231.csv");
 const placeCsvPath = path.join(publicDataPath, "2_경찰청_범죄 발생 장소별 통계_20241231.csv");
@@ -31,6 +45,89 @@ function readCsv(filePath: string) {
 
 function toNumber(value: string | undefined) {
   return Number(value?.replaceAll(",", "") ?? 0) || 0;
+}
+
+function stringifyDbValue(value: unknown) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+async function readInsaDbData(): Promise<InsaDbData> {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return {
+      columns: [],
+      error: "DATABASE_URL 환경 변수가 설정되어 있지 않습니다.",
+      rows: [],
+      sourceName: "PostgreSQL DATABASE_URL",
+      total: 0,
+    };
+  }
+
+  let client: PgClient | undefined;
+
+  try {
+    client = createPgClient(databaseUrl);
+    await client.connect();
+
+    const result = await client.query(
+      `
+        select
+          b.seq,
+          b.dept_cd,
+          a.dept_nm,
+          b.name,
+          b.birth,
+          b.reg_date
+        from insa b
+        left join dept a on a.dept_cd = b.dept_cd
+        order by b.seq desc
+        limit 100
+      `,
+    );
+    const columns = result.fields.map((field) => field.name);
+    const rows = result.rows.map((row) =>
+      Object.fromEntries(columns.map((column) => [column, stringifyDbValue(row[column])])),
+    );
+
+    return {
+      columns,
+      rows,
+      sourceName: "PostgreSQL insa",
+      total: rows.length,
+    };
+  } catch (error) {
+    return {
+      columns: [],
+      error: error instanceof Error ? error.message : "알 수 없는 DB 연결 오류가 발생했습니다.",
+      rows: [],
+      sourceName: "PostgreSQL insa",
+      total: 0,
+    };
+  } finally {
+    await client?.end().catch(() => undefined);
+  }
+}
+
+function createPgClient(databaseUrl: string): PgClient {
+  return new Client({
+    connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  });
 }
 
 function readTimeCrimeData(): TimeCrimeData {
@@ -233,17 +330,19 @@ function readRegionCrimeData(): RegionCrimeData {
   };
 }
 
-export default function Sw001Page() {
+export default async function Sw001Page() {
   const timeCrimeData = readTimeCrimeData();
   const placeCrimeData = readPlaceCrimeData();
   const cyberCrimeData = readCyberCrimeData();
   const regionCrimeData = readRegionCrimeData();
+  const insaDbData = await readInsaDbData();
   const kakaoJavascriptKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JAVASCRIPT_KEY ?? "";
 
   return (
     <>
       <Sw001Client
         cyberCrimeData={cyberCrimeData}
+        insaDbData={insaDbData}
         kakaoJavascriptKey={kakaoJavascriptKey}
         placeCrimeData={placeCrimeData}
         regionCrimeData={regionCrimeData}
