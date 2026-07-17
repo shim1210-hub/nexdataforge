@@ -71,6 +71,28 @@ function validateRequiredPayload(payload: InsaPayload) {
   }
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof AggregateError) {
+    const nestedMessages = error.errors
+      .map((nestedError) => getErrorMessage(nestedError))
+      .filter(Boolean);
+
+    if (nestedMessages.length > 0) {
+      return nestedMessages.join(" / ");
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  return "알 수 없는 오류가 발생했습니다.";
+}
+
 async function withClient<T>(callback: (client: PgClient) => Promise<T>) {
   const client = createPgClient();
 
@@ -112,7 +134,7 @@ async function readRows(client: PgClient) {
 
 function jsonError(error: unknown, status = 400) {
   return Response.json(
-    { error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다." },
+    { error: getErrorMessage(error) },
     { status },
   );
 }

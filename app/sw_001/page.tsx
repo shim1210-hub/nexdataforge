@@ -63,6 +63,28 @@ function stringifyDbValue(value: unknown) {
   return String(value);
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof AggregateError) {
+    const nestedMessages = error.errors
+      .map((nestedError) => getErrorMessage(nestedError))
+      .filter(Boolean);
+
+    if (nestedMessages.length > 0) {
+      return nestedMessages.join(" / ");
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  return "알 수 없는 DB 연결 오류가 발생했습니다.";
+}
+
 async function readInsaDbData(): Promise<InsaDbData> {
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -111,7 +133,7 @@ async function readInsaDbData(): Promise<InsaDbData> {
   } catch (error) {
     return {
       columns: [],
-      error: error instanceof Error ? error.message : "알 수 없는 DB 연결 오류가 발생했습니다.",
+      error: getErrorMessage(error),
       rows: [],
       sourceName: "PostgreSQL insa",
       total: 0,
