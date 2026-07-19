@@ -1,0 +1,133 @@
+.kakaoMap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  background: #e9eee9;
+}
+
+.mapMessage {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  width: min(88%, 430px);
+  padding: 16px 20px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(20, 70, 50, .14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .94);
+  color: #24443a;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(15, 50, 35, .12);
+}
+
+.storePhoto,
+.cardPhoto {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.emptyDetail {
+  display: grid;
+  place-items: center;
+  color: #66756f;
+  text-align: center;
+}
+
+.storeStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.storeStrip button {
+  display: grid;
+  gap: 5px;
+  padding: 15px 17px;
+  border: 1px solid #dde5e0;
+  border-radius: 13px;
+  background: #fff;
+  color: #1d332b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.storeStrip button:hover,
+.storeStripActive {
+  border-color: #ff6b2c !important;
+  box-shadow: 0 8px 20px rgba(255, 107, 44, .1);
+}
+
+.storeStrip span {
+  overflow: hidden;
+  color: #708079;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .kakaoMap { min-height: 410px; }
+  .storeStrip { grid-template-columns: 1fr; }
+}
+
+.authModal,
+.detailModal {
+  width: min(92vw, 560px);
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(14, 39, 30, .24);
+}
+
+.detailModal { width: min(92vw, 720px); }
+
+.authModal header,
+.detailModal header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 26px 18px;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.authModal header span,
+.detailModal header span { color: #ff6b2c; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.authModal header h2,
+.detailModal header h2 { margin: 5px 0 0; color: #182c25; }
+.detailModal header p { margin: 6px 0 0; color: #75817d; font-size: 13px; }
+.authModal header button,
+.detailModal header button { border: 0; background: transparent; font-size: 26px; cursor: pointer; }
+
+.authModal > label { display: grid; gap: 7px; margin: 17px 26px; color: #344b43; font-size: 13px; font-weight: 700; }
+.authModal input { height: 46px; padding: 0 13px; border: 1px solid #dce3df; border-radius: 10px; font: inherit; }
+.authError { margin: 0 26px; color: #cf3d2e; font-size: 13px; }
+.authNotice { max-width: 430px; margin: 7px 0 0; color: #718078; font-size: 12px; line-height: 1.5; }
+.authSubmit { width: calc(100% - 52px); height: 48px; margin: 18px 26px 8px; border: 0; border-radius: 11px; background: #ff6b2c; color: #fff; font-weight: 800; cursor: pointer; }
+.authSwitch { display: block; margin: 0 auto 22px; border: 0; background: transparent; color: #47655b; cursor: pointer; }
+
+.detailActions { display: flex; gap: 9px; padding: 18px 26px 4px; }
+.detailActions button,
+.detailActions a { flex: 1; padding: 12px; border: 1px solid #ff6b2c; border-radius: 10px; background: #fff7f2; color: #db531b; font-size: 13px; font-weight: 800; text-align: center; text-decoration: none; cursor: pointer; }
+.benefitSection { padding: 18px 26px 4px; }
+.benefitSection h3 { margin: 0 0 11px; color: #1c332b; font-size: 17px; }
+.benefitSection h3 b { color: #ff6b2c; }
+.benefitList { display: grid; gap: 9px; }
+.benefitList article { display: flex; gap: 13px; padding: 14px; border: 1px solid #e5ebe7; border-radius: 13px; background: #fbfcfb; }
+.benefitList article > span { min-width: 60px; color: #ff6b2c; font-size: 10px; font-weight: 900; }
+.benefitList h4 { margin: 0 0 5px; color: #20372f; }
+.benefitList p { margin: 0 0 6px; color: #5c6f68; font-size: 13px; }
+.benefitList small { color: #8a9691; }
+.noBenefit { padding: 14px; border-radius: 11px; background: #f5f7f6; color: #7c8984; font-size: 13px; }
+.storeInfo { margin: 22px 26px 28px; border-top: 1px solid #e8ecea; }
+.storeInfo div { display: grid; grid-template-columns: 90px 1fr; gap: 10px; padding: 12px 0; border-bottom: 1px solid #eef1ef; }
+.storeInfo dt { color: #7c8984; font-size: 12px; }
+.storeInfo dd { margin: 0; color: #344b43; font-size: 13px; }
+.loginRequiredButton,
+.logoutButton { margin-top: 18px; padding: 11px 18px; border: 0; border-radius: 10px; background: #ff6b2c; color: white; font-weight: 800; cursor: pointer; }
+.logoutButton { background: #364f46; }

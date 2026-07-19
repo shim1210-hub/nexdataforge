@@ -17,6 +17,23 @@ function base64Url(bytes: ArrayBuffer) {
 }
 
 type ProxySession = { expiresAt?: number; accessLevel?: "SUPER_ADMIN" | "SITE_USER"; companySlug?: string | null };
+type Sw002OperatorSession = { expiresAt?: number; role?: "ADMIN" | "STORE_MANAGER"; userId?: string };
+
+async function getValidSw002Operator(request: Parameters<NextProxy>[0]): Promise<Sw002OperatorSession | null> {
+  const token = request.cookies.get("sw002_operator_session")?.value;
+  if (!token) return null;
+  const [payload, suppliedSignature] = token.split(".");
+  if (!payload || !suppliedSignature) return null;
+  const secret = process.env.SW002_SESSION_SECRET || process.env.DATABASE_URL || "";
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const expected = base64Url(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload)));
+  if (expected !== suppliedSignature) return null;
+  try {
+    const normalized = payload.replaceAll("-", "+").replaceAll("_", "/");
+    const session = JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="))) as Sw002OperatorSession;
+    return typeof session.expiresAt === "number" && session.expiresAt > Date.now() ? session : null;
+  } catch { return null; }
+}
 
 async function getValidSw006Session(request: Parameters<NextProxy>[0]): Promise<ProxySession | null> {
   const token = request.cookies.get("sw006_session")?.value;
@@ -37,6 +54,12 @@ async function getValidSw006Session(request: Parameters<NextProxy>[0]): Promise<
 export const proxy: NextProxy = async (request, event) => {
   const response = NextResponse.next();
   const { nextUrl } = request;
+
+  const sw002ManagementApis = ["/sw_002/api/stores", "/sw_002/api/menus", "/sw_002/api/events", "/sw_002/api/coupons", "/sw_002/api/store-images", "/sw_002/api/coupon-images"];
+  if (sw002ManagementApis.some((path) => nextUrl.pathname === path)) {
+    const operator = await getValidSw002Operator(request);
+    if (!operator) return NextResponse.json({ error: "운영자 로그인이 필요합니다." }, { status: 401 });
+  }
 
   if (nextUrl.pathname.startsWith("/sw_006/api/") && nextUrl.pathname !== "/sw_006/api/auth") {
     const session = await getValidSw006Session(request);

@@ -1,0 +1,294 @@
+.globalStoreBar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border: 1px solid #cbd9fb;
+  border-radius: 12px;
+  background: #edf4ff;
+}
+
+.globalStoreBar > div {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+}
+
+.globalStoreBar small,
+.globalStoreBar span {
+  color: #61718c;
+  font-size: 9px;
+}
+
+.globalStoreBar strong {
+  color: #172033;
+  font-size: 14px;
+}
+
+.globalStoreBar label {
+  display: grid;
+  gap: 5px;
+  color: #4e5b70;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.globalStoreBar select {
+  min-width: 210px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #afc6fa;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.storeSelector {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 15px 18px;
+  border: 1px solid #e5e9f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.storeSelector > div {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+}
+
+.storeSelector > div strong {
+  font-size: 11px;
+}
+
+.storeSelector > div span {
+  color: #748096;
+  font-size: 8px;
+}
+
+.emptyMenus {
+  display: grid;
+  min-height: 170px;
+  place-items: center;
+  color: #748096;
+  font-size: 10px;
+}
+
+.searchReset {
+  padding: 0 11px;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  color: #61718c;
+  background: #fff;
+  font-size: 9px;
+}
+
+.couponPreview {
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+  padding: 28px;
+  border-radius: 16px;
+  color: #fff;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 14px 30px #17203325;
+}
+
+.couponPreview small {
+  opacity: .8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.couponPreview strong {
+  font-size: 20px;
+}
+
+.couponPreview b {
+  font-size: 29px;
+}
+
+.couponPreview span {
+  opacity: .8;
+  font-size: 9px;
+}
+
+.coupon_blue {
+  background-color: #246bfd;
+  background-image: linear-gradient(135deg, #246bfd, #173e9f);
+}
+
+.coupon_coral {
+  background-color: #ff6b57;
+  background-image: linear-gradient(135deg, #ff6b57, #c83f37);
+}
+
+.coupon_green {
+  background-color: #20a46b;
+  background-image: linear-gradient(135deg, #20a46b, #126b49);
+}
+
+.couponThumb {
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+.storeSelector label {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  color: #4e5b70;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.storeSelector select {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.storeSelector button {
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #246bfd;
+  border-radius: 8px;
+  color: #246bfd;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.storeSelector > span {
+  align-self: center;
+  color: #748096;
+  font-size: 9px;
+}
+
+.storeCover {
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+.imageButton {
+  padding: 9px 12px;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  color: #172033;
+  background: #fff;
+  box-shadow: 0 3px 10px #1720331f;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.imageButton input {
+  display: none;
+}
+
+.storeCover > small {
+  max-width: 210px;
+  padding: 4px 7px;
+  border-radius: 5px;
+  color: #4e5b70;
+  background: #ffffffe8;
+  font-size: 8px;
+  text-align: center;
+}
+
+.addressBlock {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  color: #4e5b70;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.addressSearchRow {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 8px;
+}
+
+.addressSearchRow input[readonly] {
+  color: #536078;
+  background: #f6f8fb;
+}
+
+.addressSearchRow button {
+  padding: 0 14px;
+  border: 1px solid #246bfd;
+  border-radius: 8px;
+  color: #246bfd;
+  background: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.addressBlock > small {
+  color: #748096;
+  font-size: 8px;
+  font-weight: 500;
+}
+
+.businessHours {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  color: #4e5b70;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.businessHours > div {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.businessHours b {
+  color: #748096;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+@media (max-width: 620px) {
+  .globalStoreBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .globalStoreBar select {
+    width: 100%;
+  }
+
+  .storeSelector {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .storeSelector > span {
+    align-self: flex-start;
+  }
+
+  .addressSearchRow {
+    grid-template-columns: 82px 1fr;
+  }
+
+  .addressSearchRow button {
+    grid-column: 1 / -1;
+    height: 38px;
+  }
+}
