@@ -1,0 +1,210 @@
+.page {
+  width: 100%;
+  min-width: 0;
+  color: #172033;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 22px 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgb(15 23 42 / 4%);
+}
+
+.eyebrow {
+  color: #4f46e5;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.topbar h2 {
+  margin: 7px 0 5px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.topbar p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.siteSelect {
+  display: grid;
+  flex: 0 0 260px;
+  gap: 7px;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.siteSelect select {
+  width: 100%;
+  height: 42px;
+  padding: 0 36px 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  color: #1e293b;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.siteSelect select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 12%); }
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(260px, 310px) minmax(0, 1fr);
+  min-height: 650px;
+  overflow: hidden;
+  border: 1px solid #dce3ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgb(15 23 42 / 5%);
+}
+
+.menuPanel {
+  min-width: 0;
+  overflow-y: auto;
+  border-right: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.panelTitle {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 19px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: rgb(248 250 252 / 96%);
+}
+
+.panelTitle strong { font-size: 13px; }
+.panelTitle > span { padding: 4px 8px; border-radius: 999px; color: #4f46e5; background: #e0e7ff; font-size: 9px; font-weight: 900; }
+
+.menuGroup {
+  margin: 14px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.menuGroup + .menuGroup { margin-top: 12px; }
+
+.parentLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f1f5f9;
+}
+
+.parentLabel span { flex: none; padding: 4px 6px; border-radius: 5px; color: #4338ca; background: #e0e7ff; font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+.parentLabel strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+
+.childList { display: grid; gap: 4px; padding: 7px; }
+
+.childList button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 45px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #475569;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: .16s ease;
+}
+
+.childList button:hover { border-color: #dbe2ea; background: #fff; }
+.childList button > span { min-width: 0; overflow: hidden; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.childList button small { flex: none; padding: 4px 7px; border-radius: 999px; color: #64748b; background: #e2e8f0; font-size: 8px; font-weight: 800; }
+.childList .activeChild { border-color: #c7d2fe; color: #4338ca; background: #eef2ff; box-shadow: inset 3px 0 #4f46e5; }
+.childList .activeChild small { color: #4338ca; background: #dbeafe; }
+
+.guide,
+.empty {
+  padding: 40px 22px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.editorPanel { min-width: 0; background: #fff; }
+
+.editorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 21px 25px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.editorHeader span { color: #7c3aed; font-size: 9px; font-weight: 800; }
+.editorHeader h3 { margin: 5px 0 0; font-size: 19px; }
+.editorHeader button { min-height: 40px; padding: 0 17px; border: 0; border-radius: 9px; color: #fff; background: #4f46e5; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+.editorHeader button:hover { background: #4338ca; }
+.editorHeader button:disabled { cursor: wait; opacity: .55; }
+
+.message { margin: 18px 25px 0; padding: 11px 13px; border: 1px solid #c7d2fe; border-radius: 8px; color: #4338ca; background: #eef2ff; font-size: 10px; }
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+  padding: 25px;
+}
+
+.formGrid label { display: grid; min-width: 0; gap: 7px; color: #475569; font-size: 10px; font-weight: 800; }
+.formGrid input,
+.formGrid textarea { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid #d8e0ea; border-radius: 8px; color: #1e293b; background: #fff; font: inherit; font-size: 12px; line-height: 1.6; outline: none; }
+.formGrid textarea { min-height: 230px; resize: vertical; }
+.formGrid input:focus,
+.formGrid textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 10%); }
+.full { grid-column: 1 / -1; }
+
+.imageField { display: grid; gap: 7px; color: #475569; font-size: 10px; font-weight: 800; }
+.imageField > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.imageField small { color: #94a3b8; font-size: 9px; font-weight: 600; }
+.fileButton { display: grid; min-width: 94px; min-height: 42px; place-items: center; padding: 0 14px; border: 1px solid #6366f1; border-radius: 8px; color: #4f46e5; background: #eef2ff; font-size: 10px; font-weight: 900; cursor: pointer; }
+.fileButton:hover { color: #fff; background: #4f46e5; }
+.fileButton input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+.editorEmpty { display: grid; min-height: 600px; place-items: center; padding: 30px; color: #94a3b8; font-size: 12px; text-align: center; }
+
+@media (max-width: 900px) {
+  .topbar { align-items: stretch; flex-direction: column; }
+  .siteSelect { flex-basis: auto; }
+  .workspace { grid-template-columns: 1fr; }
+  .menuPanel { max-height: 330px; border-right: 0; border-bottom: 1px solid #e2e8f0; }
+}
+
+@media (max-width: 620px) {
+  .topbar { padding: 18px; }
+  .editorHeader { align-items: stretch; flex-direction: column; }
+  .editorHeader button { width: 100%; }
+  .formGrid { grid-template-columns: 1fr; padding: 18px; }
+  .full { grid-column: auto; }
+  .imageField > div { grid-template-columns: 1fr; }
+}

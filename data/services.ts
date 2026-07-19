@@ -87,4 +87,19 @@ export const services: Service[] = [
     enabled: true,
     icon: "UTL",
   },
+  {
+    id: "SW_006",
+    title: "AI Website Factory",
+    description:
+      "업체별 홈페이지 생성부터 메뉴·콘텐츠 관리, GitHub Push와 Vercel 배포까지 한곳에서 운영하는 관리자 서비스입니다.",
+    features: [
+      "업체별 사이트와 템플릿 관리",
+      "메뉴·화면·게시글 직접 CRUD",
+      "GitHub·Vercel 배포 상태 확인",
+    ],
+    status: "서비스 중" as ServiceStatus,
+    href: "/sw_006",
+    enabled: true,
+    icon: "AIW",
+  },
 ];

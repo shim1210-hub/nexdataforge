@@ -1,0 +1,192 @@
+{
+  "id": "1919c1eb-b7f1-4c66-900c-d646b7d1c2c3",
+  "slug": "hdcon",
+  "name": "현대건설",
+  "industry": "건설 / 시공",
+  "status": "DRAFT",
+  "menus": [
+    {
+      "id": "7c783de9-d955-42fe-aed2-3e3675e5bdfd",
+      "parentId": null,
+      "name": "회사소개",
+      "slug": "회사소개",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "27787058-246a-4719-855f-0591e0e5bff2",
+      "parentId": null,
+      "name": "회사실적",
+      "slug": "회사실적",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "6a327651-dd6a-4b3e-9c08-d495c297b7a2",
+      "parentId": null,
+      "name": "자격사항",
+      "slug": "자격사항",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "945a46e4-f5f0-4731-994a-85d50eb42138",
+      "parentId": null,
+      "name": "고객센터",
+      "slug": "고객센터",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "5ef28d50-a47b-4aa0-80f5-cef045890454",
+      "parentId": "27787058-246a-4719-855f-0591e0e5bff2",
+      "name": "토목",
+      "slug": "토목",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "37f08caa-2660-4825-be3b-6624df14a769",
+      "parentId": "945a46e4-f5f0-4731-994a-85d50eb42138",
+      "name": "공지사항",
+      "slug": "공지사항",
+      "urlType": "BOARD",
+      "boardId": "84413160-cfc4-4049-88b0-a167af474fba"
+    },
+    {
+      "id": "f6331540-77bf-440f-b2a1-513d1eb157dd",
+      "parentId": "7c783de9-d955-42fe-aed2-3e3675e5bdfd",
+      "name": "인사말",
+      "slug": "인사말",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "7a15c625-9c31-4287-9cb3-60d913da3c0e",
+      "parentId": "6a327651-dd6a-4b3e-9c08-d495c297b7a2",
+      "name": "국내",
+      "slug": "국내",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "ba2eaca8-5929-4f37-88d6-5304e1ae15f8",
+      "parentId": "945a46e4-f5f0-4731-994a-85d50eb42138",
+      "name": "게시판",
+      "slug": "게시판",
+      "urlType": "BOARD",
+      "boardId": "ae73ae7d-1be5-4e83-a990-6638fd21b001"
+    },
+    {
+      "id": "0a8fe9d8-743a-4c9d-9d64-642bf8c26d65",
+      "parentId": "27787058-246a-4719-855f-0591e0e5bff2",
+      "name": "건축",
+      "slug": "건축",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "82239ac3-aa5b-4b07-99e4-6874b117b512",
+      "parentId": "6a327651-dd6a-4b3e-9c08-d495c297b7a2",
+      "name": "국외",
+      "slug": "국외",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "e9e2edb8-8698-42de-9e67-5e471259862b",
+      "parentId": "7c783de9-d955-42fe-aed2-3e3675e5bdfd",
+      "name": "조직도",
+      "slug": "조직도",
+      "urlType": "PAGE",
+      "boardId": null
+    }
+  ],
+  "sections": [
+    {
+      "sectionType": "HERO",
+      "title": "더 나은 공간을 만드는 기업",
+      "subtitle": "BUILDING THE FUTURE",
+      "body": "1111111111111111111"
+    },
+    {
+      "sectionType": "MENU_7c783de9-d955-42fe-aed2-3e3675e5bdfd",
+      "title": "회사소개",
+      "subtitle": "회사소개",
+      "body": "2222222222222222"
+    },
+    {
+      "sectionType": "MENU_27787058-246a-4719-855f-0591e0e5bff2",
+      "title": "회사실적",
+      "subtitle": "회사실적",
+      "body": "33333333333333"
+    },
+    {
+      "sectionType": "MENU_6a327651-dd6a-4b3e-9c08-d495c297b7a2",
+      "title": "자격사항",
+      "subtitle": "자격사항",
+      "body": "444444444444444"
+    },
+    {
+      "sectionType": "MENU_945a46e4-f5f0-4731-994a-85d50eb42138",
+      "title": "고객센터",
+      "subtitle": "고객센터",
+      "body": "고객센터에 대한 내용을 입력해 주세요."
+    }
+  ],
+  "pages": [
+    {
+      "menuId": "e9e2edb8-8698-42de-9e67-5e471259862b",
+      "title": "조직도",
+      "subtitle": "",
+      "body": "",
+      "imageUrl": "/sw_006/hdcon/images/e833464d-f705-4f60-a2fc-b26d9c8d4003-1784417308403.png"
+    }
+  ],
+  "posts": [
+    {
+      "id": 5,
+      "boardId": "ae73ae7d-1be5-4e83-a990-6638fd21b001",
+      "title": "게시판1",
+      "content": "게시판1",
+      "isNotice": false,
+      "publishedAt": "2026-07-19 00:02:25.612127+00",
+      "attachments": []
+    },
+    {
+      "id": 4,
+      "boardId": "84413160-cfc4-4049-88b0-a167af474fba",
+      "title": "2",
+      "content": "2",
+      "isNotice": false,
+      "publishedAt": "2026-07-19 00:02:13.400756+00",
+      "attachments": []
+    },
+    {
+      "id": 3,
+      "boardId": "84413160-cfc4-4049-88b0-a167af474fba",
+      "title": "1",
+      "content": "1",
+      "isNotice": false,
+      "publishedAt": "2026-07-19 00:02:04.650556+00",
+      "attachments": []
+    }
+  ],
+  "footer": {
+    "companyName": "현대건설",
+    "representativeName": "김말동",
+    "businessNumber": "123-81-12345",
+    "email": "test@gmail.com",
+    "phone": "02-510-1234",
+    "address": "서울시 종로구 다동 123번지 현대건설 빌딩 8층",
+    "copyrightText": null,
+    "siteByText": "NexDataForge"
+  },
+  "theme": {
+    "layout": "horizontal",
+    "primary": "#4F46E5",
+    "font": "Pretendard",
+    "radius": 12
+  },
+  "appliedAt": "2026-07-19T01:07:19.771Z"
+}

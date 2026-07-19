@@ -1,0 +1,3 @@
+.manage { display: flex; gap: 5px; }
+.manage button { white-space: nowrap; }
+.manage .delete { border-color: #fecaca; color: #dc2626; background: #fff7f7; }

@@ -1,0 +1,219 @@
+{
+  "id": "640b56a7-b778-457e-aebf-109c8dfa00e4",
+  "slug": "tycon",
+  "name": "태영건설",
+  "industry": "건설 / 시공",
+  "status": "DRAFT",
+  "menus": [
+    {
+      "id": "d11c1659-6788-4179-9734-7077fc5fa629",
+      "parentId": null,
+      "name": "회사소개",
+      "slug": "회사소개",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "405b89fe-2a89-4c4f-89dd-85d694233153",
+      "parentId": null,
+      "name": "사업소개",
+      "slug": "사업소개",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "c8eacd56-6d01-439a-9645-18efa9516e6a",
+      "parentId": null,
+      "name": "투자정보",
+      "slug": "투자정보",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "c18bcb0f-0f43-42c5-a37b-5706b248edc6",
+      "parentId": null,
+      "name": "인재채용",
+      "slug": "인재채용",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "6d7e5979-a6a3-4436-b152-3fcee25fd339",
+      "parentId": null,
+      "name": "고객센터",
+      "slug": "고객센터",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "31af995c-0d3b-4dee-8524-8d57561afdb6",
+      "parentId": "6d7e5979-a6a3-4436-b152-3fcee25fd339",
+      "name": "공지사항",
+      "slug": "공지사항",
+      "urlType": "BOARD",
+      "boardId": "34edb1bf-e890-435d-97b8-e8912c8a37a0"
+    },
+    {
+      "id": "463af397-5e9e-40f6-b9a3-5aa9c0a2f68a",
+      "parentId": "d11c1659-6788-4179-9734-7077fc5fa629",
+      "name": "인사말",
+      "slug": "조직도",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "66e1338d-398a-4398-936e-727f80682bb2",
+      "parentId": "405b89fe-2a89-4c4f-89dd-85d694233153",
+      "name": "토목",
+      "slug": "토목",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "d78ceda7-2abf-42f9-8f0d-8f5df4a407e7",
+      "parentId": "c8eacd56-6d01-439a-9645-18efa9516e6a",
+      "name": "전자공시",
+      "slug": "전자공시",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "145c7157-9e13-4500-8ff4-7f2922158e7b",
+      "parentId": "c18bcb0f-0f43-42c5-a37b-5706b248edc6",
+      "name": "복리후생",
+      "slug": "복리후생",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "7e3fe340-06aa-4102-98fe-4ae580df8585",
+      "parentId": "c18bcb0f-0f43-42c5-a37b-5706b248edc6",
+      "name": "인재채용",
+      "slug": "인재채용",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "9d6a0f82-e9d0-43ef-8717-6174cb83c96b",
+      "parentId": "c8eacd56-6d01-439a-9645-18efa9516e6a",
+      "name": "IR",
+      "slug": "ir",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "6decfde3-5acd-4b6e-abdc-6825991b484c",
+      "parentId": "d11c1659-6788-4179-9734-7077fc5fa629",
+      "name": "조직도",
+      "slug": "조직도",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "ec023e4f-9b6e-4859-9546-9613ae1646bf",
+      "parentId": "405b89fe-2a89-4c4f-89dd-85d694233153",
+      "name": "건축",
+      "slug": "건축",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "fef2fe6f-7eab-4f45-a5a6-e2ae2ca4f9d0",
+      "parentId": "405b89fe-2a89-4c4f-89dd-85d694233153",
+      "name": "플랜트",
+      "slug": "플랜트",
+      "urlType": "PAGE",
+      "boardId": null
+    },
+    {
+      "id": "c73434b1-811a-49bf-a235-8774e024c6f2",
+      "parentId": "d11c1659-6788-4179-9734-7077fc5fa629",
+      "name": "오시는길",
+      "slug": "오시는길",
+      "urlType": "PAGE",
+      "boardId": null
+    }
+  ],
+  "sections": [
+    {
+      "sectionType": "HERO",
+      "title": "더 나은 공간을 만드는 기업",
+      "subtitle": "BUILDING THE FUTURE",
+      "body": "신뢰와 기술을 바탕으로 고객의 미래를 함께 만들어갑니다.q"
+    },
+    {
+      "sectionType": "MENU_d11c1659-6788-4179-9734-7077fc5fa629",
+      "title": "회사소개",
+      "subtitle": "회사소개",
+      "body": "회사소개에 대한 내용을 입력해 주세요."
+    },
+    {
+      "sectionType": "MENU_405b89fe-2a89-4c4f-89dd-85d694233153",
+      "title": "사업소개",
+      "subtitle": "사업소개",
+      "body": "사업소개에 대한 내용을 입력해 주세요."
+    },
+    {
+      "sectionType": "MENU_c8eacd56-6d01-439a-9645-18efa9516e6a",
+      "title": "투자정보",
+      "subtitle": "투자정보",
+      "body": "투자정보에 대한 내용을 입력해 주세요."
+    },
+    {
+      "sectionType": "MENU_c18bcb0f-0f43-42c5-a37b-5706b248edc6",
+      "title": "인재채용",
+      "subtitle": "인재채용",
+      "body": "인재채용에 대한 내용을 입력해 주세요."
+    },
+    {
+      "sectionType": "MENU_6d7e5979-a6a3-4436-b152-3fcee25fd339",
+      "title": "고객센터",
+      "subtitle": "고객센터",
+      "body": "고객센터에 대한 내용을 입력해 주세요."
+    }
+  ],
+  "pages": [
+    {
+      "menuId": "6decfde3-5acd-4b6e-abdc-6825991b484c",
+      "title": "조직도",
+      "subtitle": "",
+      "body": "",
+      "imageUrl": "/sw_006/tycon/images/ec9abb50-db60-4ab6-9f37-8c3c25a0318e-1784420039885.png"
+    },
+    {
+      "menuId": "c73434b1-811a-49bf-a235-8774e024c6f2",
+      "title": "오시는길",
+      "subtitle": "",
+      "body": "",
+      "imageUrl": "/sw_006/tycon/images/f03-1784420051094.jpg"
+    }
+  ],
+  "posts": [
+    {
+      "id": 6,
+      "boardId": "34edb1bf-e890-435d-97b8-e8912c8a37a0",
+      "title": "태영게시판",
+      "content": "내용",
+      "isNotice": false,
+      "publishedAt": "2026-07-19 00:15:27.555684+00",
+      "attachments": []
+    }
+  ],
+  "footer": {
+    "companyName": "태영건설",
+    "representativeName": "박태영",
+    "businessNumber": "232-82-59431",
+    "email": "ty@gmail.com",
+    "phone": "02-231-1231",
+    "address": "전라남도 광양시 산남로 109번지 태영빌딩 18층",
+    "copyrightText": null,
+    "siteByText": "NexDataForge"
+  },
+  "theme": {
+    "layout": "split",
+    "primary": "#4F46E5",
+    "font": "Pretendard",
+    "radius": 12
+  },
+  "appliedAt": "2026-07-19T01:07:47.716Z"
+}
