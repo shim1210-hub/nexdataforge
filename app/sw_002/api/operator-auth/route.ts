@@ -1,5 +1,6 @@
 import { clearOperatorSession, getOperatorSession, setOperatorSession, type OperatorRole } from "../_lib/operator-session";
 import { getCustomerPool, verifyPassword } from "../_lib/customer-session";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,7 +9,12 @@ const roleForMode = { partner: "STORE_MANAGER", admin: "ADMIN" } as const;
 const adminEmail = "admin@naver.com";
 const adminPasswordHash = "eb416f30e399b4fd1c532eda80ffb16f:eb07502a7589135763994198f7b71f835b3b6ab05ca49aebf85bdad342e30745549a016426e4542e62c69d47d7956ebf6dba4caf9bd3f07aff9c53ed9395b9dd";
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (new URL(request.url).searchParams.get("logout") === "1") {
+    const returnPath = new URL(request.url).searchParams.get("return") === "admin" ? "/sw_002/admin" : "/sw_002/partner";
+    await clearOperatorSession();
+    return NextResponse.redirect(new URL(returnPath, request.url), { status: 303 });
+  }
   const session = await getOperatorSession();
   if (!session) return Response.json({ user: null });
   const result = await getCustomerPool().query("select id::text, email, nickname from sw002_users where id = $1 and status = 'ACTIVE'", [session.userId]);
@@ -49,7 +55,9 @@ export async function POST(request: Request) {
     );
     const user = result.rows[0];
     if (!user || !verifyPassword(body.password ?? "", user.password_hash)) throw new Error("해당 운영자 계정 또는 비밀번호가 올바르지 않습니다.");
-    await setOperatorSession(user.id, user.role);
+    // The login mode is the authority boundary. Do not inherit a stale or
+    // incorrectly seeded database role into the operator session.
+    await setOperatorSession(user.id, requiredRole);
     return Response.json({ user: { id: user.id, email: user.email, nickname: user.nickname, role: requiredRole } });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "운영자 로그인에 실패했습니다." }, { status: 401 });
@@ -58,5 +66,12 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   await clearOperatorSession();
-  return Response.json({ user: null });
+  const response = Response.json({ user: null });
+  // Clear the legacy root-scoped cookie separately. Setting two cookies with
+  // the same name through cookies() can overwrite the /sw_002 deletion.
+  response.headers.append(
+    "Set-Cookie",
+    `sw002_operator_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+  );
+  return response;
 }

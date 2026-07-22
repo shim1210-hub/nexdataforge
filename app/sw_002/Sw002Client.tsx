@@ -46,6 +46,7 @@ type MapStore = MapStoreRow & {
 type KakaoMap = {
   setBounds: (bounds: unknown, padding?: number) => void;
   setCenter: (position: unknown) => void;
+  relayout?: () => void;
 };
 
 type KakaoMarker = { setMap: (map: KakaoMap | null) => void };
@@ -100,6 +101,15 @@ function getAnonymousSessionId() {
       : `anon-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   window.localStorage.setItem(storageKey, created);
   return created;
+}
+
+function distanceInMeters(latitude1: number, longitude1: number, latitude2: number, longitude2: number) {
+  const earthRadius = 6371000;
+  const latitudeDelta = ((latitude2 - latitude1) * Math.PI) / 180;
+  const longitudeDelta = ((longitude2 - longitude1) * Math.PI) / 180;
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos((latitude1 * Math.PI) / 180) * Math.cos((latitude2 * Math.PI) / 180) * Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
 }
 
 export default function Sw002Client({
@@ -202,11 +212,23 @@ export default function Sw002Client({
   );
 
   const visibleStores = useMemo(
-    () =>
-      category === "전체"
+    () => {
+      const categoryStores = category === "전체"
         ? stores
-        : stores.filter((store) => store.categoryLabel === category),
-    [category, stores],
+        : stores.filter((store) => store.categoryLabel === category);
+      const center = stores[0];
+      const radiusMeters = radius.endsWith("m")
+        ? Number(radius.replace("m", ""))
+        : Number(radius.replace("km", "")) * 1000;
+      if (!center || !Number.isFinite(radiusMeters)) return categoryStores;
+      return categoryStores.filter((store) => distanceInMeters(
+        center.latitudeNumber,
+        center.longitudeNumber,
+        store.latitudeNumber,
+        store.longitudeNumber,
+      ) <= radiusMeters);
+    },
+    [category, radius, stores],
   );
 
   const selectedStore =
@@ -244,12 +266,13 @@ export default function Sw002Client({
 
   useEffect(() => {
     const maps = (window as KakaoWindow).kakao?.maps;
-    if (!mapScriptReady || !maps || !mapElementRef.current || visibleStores.length === 0) {
+    if (tab !== "home" || !mapScriptReady || !maps || !mapElementRef.current || visibleStores.length === 0) {
       return;
     }
 
+    let cancelled = false;
     maps.load(() => {
-      if (!mapElementRef.current) return;
+      if (cancelled || !mapElementRef.current) return;
       markerRefs.current.forEach((marker) => marker.setMap(null));
       markerRefs.current = [];
 
@@ -271,13 +294,16 @@ export default function Sw002Client({
       if (visibleStores.length > 1) map.setBounds(bounds, 70);
       mapInstanceRef.current = map;
       setMapError("");
+      window.setTimeout(() => map.relayout?.(), 0);
     });
 
     return () => {
+      cancelled = true;
       markerRefs.current.forEach((marker) => marker.setMap(null));
       markerRefs.current = [];
+      mapInstanceRef.current = null;
     };
-  }, [mapScriptReady, selectStore, visibleStores]);
+  }, [mapScriptReady, selectStore, tab, visibleStores]);
 
   async function saveCoupon(id: string) {
     if (!user) {
@@ -357,7 +383,7 @@ export default function Sw002Client({
         <nav className={styles.desktopNav} aria-label="주요 메뉴">
           {([['home','지도 홈'],['events','이벤트'],['coupons','내 매장'],['my','마이']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? styles.activeNav : ""} onClick={() => setTab(id)}>{label}</button>)}
         </nav>
-        <div className={styles.headerActions}><div className={styles.operatorLinks}><Link className={styles.portalLink} href="/sw_002/partner">매장관리자</Link><Link className={styles.portalLink} href="/sw_002/admin">통합관리자</Link></div>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
+        <div className={styles.headerActions}>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
       </header>
 
       {tab === "home" && <>
@@ -369,7 +395,7 @@ export default function Sw002Client({
         </section>
 
         <section className={styles.discovery}>
-          <div className={styles.sectionTitle}><div><span>DISCOVER ON MAP</span><h2>등록 매장 지도</h2></div><button onClick={() => setFilterOpen(true)}>상세 필터 <b>→</b></button></div>
+          <div className={styles.sectionTitle}><div><span>DISCOVER ON MAP</span><h2>등록 매장 지도</h2></div></div>
           <div className={styles.categories}>{categories.map((item) => <button key={item} className={category === item ? styles.selectedCategory : ""} onClick={() => setCategory(item)}><i>{item === "전체" ? "-" : categoryEmoji(item)}</i><span>{item}</span></button>)}</div>
           <div className={styles.mapLayout}>
             <div className={styles.map}>
@@ -385,7 +411,12 @@ export default function Sw002Client({
               <span className={`${styles.badge} ${styles[selectedStore.tone]}`}>{selectedStore.badge}</span>
               <div className={`${styles.storeEmoji} ${mapStyles.storePhoto}`} style={selectedStore.image_url ? { backgroundImage: `url(${JSON.stringify(selectedStore.image_url).slice(1, -1)})` } : undefined}>{selectedStore.image_url ? "" : selectedStore.emoji}</div>
               <small>{selectedStore.categoryLabel} · 매장 #{selectedStore.id}</small>
-              <h3>{selectedStore.name}</h3><p>{selectedStore.offer}</p>
+              <h3>{selectedStore.name}</h3>
+              <div className={mapStyles.mapBenefits}>
+                {selectedStore.events.length > 0 && <section><strong>이벤트</strong>{selectedStore.events.slice(0, 2).map((event) => <p key={event.id}>{event.title}</p>)}</section>}
+                {selectedStore.coupons.length > 0 && <section><strong>쿠폰</strong>{selectedStore.coupons.slice(0, 2).map((coupon) => <p key={coupon.id}>{coupon.name}</p>)}</section>}
+                {selectedStore.events.length === 0 && selectedStore.coupons.length === 0 && <p>이벤트/쿠폰 없음</p>}
+              </div>
               <dl><div><dt>주소</dt><dd>{selectedStore.address}{selectedStore.address_detail ? ` ${selectedStore.address_detail}` : ""}</dd></div><div><dt>영업시간</dt><dd>{formatOpeningHours(selectedStore.opening_hours)}</dd></div><div><dt>연락처</dt><dd>{selectedStore.phone || "미등록"}</dd></div></dl>
               <button onClick={() => openStoreDetail(selectedStore)}>이벤트·매장 상세 보기</button>
             </aside> : <aside className={`${styles.mapDetail} ${mapStyles.emptyDetail}`}>표시할 매장을 등록해 주세요.</aside>}

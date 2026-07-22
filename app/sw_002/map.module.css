@@ -131,3 +131,5 @@
 .loginRequiredButton,
 .logoutButton { margin-top: 18px; padding: 11px 18px; border: 0; border-radius: 10px; background: #ff6b2c; color: white; font-weight: 800; cursor: pointer; }
 .logoutButton { background: #364f46; }
+.mapBenefits{display:grid;gap:9px;margin:11px 0 0;padding:11px 12px;border:1px solid #e7eaf0;border-radius:10px;background:#f8faff}.mapBenefits section{display:grid;gap:3px}.mapBenefits strong{color:#246bfd;font-size:10px}.mapBenefits p{margin:0;color:#4b5870;font-size:11px;line-height:1.45}.mapBenefits>p{color:#7b8799}
+.mapBenefits{min-height:58px;display:flex;flex-direction:column;justify-content:center}

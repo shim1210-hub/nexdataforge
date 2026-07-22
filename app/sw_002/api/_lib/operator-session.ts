@@ -28,7 +28,17 @@ export async function setOperatorSession(userId: string, role: OperatorRole) {
 }
 
 export async function clearOperatorSession() {
-  (await cookies()).delete(cookieName);
+  const store = await cookies();
+  // The session is scoped to /sw_002. The path must match the path used when
+  // the cookie was created, otherwise the browser keeps the old cookie.
+  store.set(cookieName, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/sw_002",
+    maxAge: 0,
+    expires: new Date(0),
+  });
 }
 
 export async function getOperatorSession(): Promise<OperatorSession | null> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import styles from "./management.module.css";
@@ -17,12 +17,12 @@ type PostcodeResult = {
 type PostcodeWindow = Window & {
   kakao?: {
     Postcode: new (options: { oncomplete: (data: PostcodeResult) => void }) => { open: () => void };
-    maps?: { services?: { Geocoder: new () => { addressSearch: (address: string, callback: (result: Array<{ x: string; y: string }>, status: string) => void) => void }; Status: { OK: string } } };
+    maps?: { load?: (callback: () => void) => void; services?: { Geocoder: new () => { addressSearch: (address: string, callback: (result: Array<{ x: string; y: string }>, status: string) => void) => void }; Status: { OK: string } } };
   };
 };
 
 type Mode = "partner" | "admin";
-type PartnerSection = "dashboard" | "store" | "menus" | "events" | "coupons" | "stats";
+type PartnerSection = "dashboard" | "store" | "menus" | "events" | "coupons" | "stats" | "store-manage";
 type AdminSection = "dashboard" | "stores" | "events" | "push" | "stats" | "users";
 type Section = PartnerSection | AdminSection;
 type OperatorUser = { id: string; email: string; nickname: string | null; role: "ADMIN" | "STORE_MANAGER" };
@@ -147,8 +147,9 @@ export default function ManagementPortal({ mode, kakaoJavascriptKey }: { mode: M
   }
 
   async function logout() {
-    await fetch("/sw_002/api/operator-auth", { method: "DELETE" });
-    setUser(null);
+    // Use a browser navigation so cookie deletion is completed by the browser
+    // even when an in-page fetch is stalled by the current server connection.
+    window.location.assign(`/sw_002/api/operator-auth?logout=1&return=${mode}`);
   }
 
   if (checking) return <main className={styles.operatorGate}><p>운영자 권한을 확인하고 있습니다.</p></main>;
@@ -157,7 +158,16 @@ export default function ManagementPortal({ mode, kakaoJavascriptKey }: { mode: M
 }
 
 function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode: Mode; onLogout: () => Promise<void>; kakaoJavascriptKey?: string }) {
-  const nav = mode === "partner" ? partnerNav : adminNav;
+  // Both operator roles use the same management workspace. The API applies
+  // the data scope: store managers receive their assigned stores, while
+  // administrators receive every store.
+  const nav = mode === "admin"
+    ? [
+        ...partnerNav.filter((item) => item.id !== "store"),
+      ].flatMap((item, index) => index === 0
+        ? [item, { id: "store-manage" as const, label: "매장정보관리", icon: "▦" }]
+        : [item])
+    : partnerNav.filter((item) => item.id !== "stats");
   const [section, setSection] = useState<Section>("dashboard");
   const [storeList, setStoreList] = useState<StoreRecord[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
@@ -169,14 +179,25 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
   const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
   const [editingCoupon, setEditingCoupon] = useState<CouponRecord | null>(null);
   const [toast, setToast] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [managedStoreId, setManagedStoreId] = useState<string | null>(null);
   const title = nav.find((item) => item.id === section)?.label ?? "대시보드";
   const isPartner = mode === "partner";
   const selectedStore = storeList.find((store) => store.id === selectedStoreId) ?? null;
 
   const notify = useCallback((message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2300); }, []);
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await onLogout();
+    } catch {
+      setLoggingOut(false);
+      notify("로그아웃 처리에 실패했습니다. 다시 시도해 주세요.");
+    }
+  }
 
   useEffect(() => {
-    if (!isPartner) return;
     fetch("/sw_002/api/stores", { cache: "no-store" })
       .then(async (response) => {
         const result = await response.json() as { stores?: StoreRecord[]; error?: string };
@@ -188,7 +209,7 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
         setSelectedStoreId((current) => current && loadedStores.some((store) => store.id === current) ? current : loadedStores[0]?.id ?? null);
       })
       .catch((error: unknown) => notify(error instanceof Error ? error.message : "매장 목록을 불러오지 못했습니다."));
-  }, [isPartner, notify]);
+  }, [notify]);
 
   useEffect(() => {
     if (!selectedStoreId) return;
@@ -383,20 +404,21 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
   return <main className={styles.app}>
     <aside className={styles.sidebar}>
       <Link href="/sw_002" className={styles.brand}><i>동</i><span><strong>동네온</strong><small>{isPartner ? "STORE PARTNER" : "PLATFORM ADMIN"}</small></span></Link>
-      <div className={styles.context}><small>{isPartner ? "현재 선택 매장" : "관리 권한"}</small><strong>{isPartner ? selectedStore?.name ?? "매장 선택 필요" : "플랫폼 최고관리자"}</strong><span>{isPartner ? selectedStore ? `${selectedStore.category} · ${selectedStore.address}` : "등록 매장을 선택해 주세요" : "전체 서비스 관리"}</span></div>
+      <div className={styles.context}><small>현재 선택 매장</small><strong>{selectedStore?.name ?? "매장 선택 필요"}</strong><span>{selectedStore ? `${selectedStore.category} · ${selectedStore.address}` : "등록 매장을 선택해 주세요"}</span></div>
       <nav>{nav.map((item) => <button key={item.id} className={section === item.id ? styles.active : ""} onClick={() => setSection(item.id)}><b>-</b><span>{item.label}</span></button>)}</nav>
-      <div className={styles.sideBottom}><Link href="/sw_002">고객 화면 보기 ↗</Link><button onClick={onLogout}>로그아웃</button></div>
+      <div className={styles.sideBottom}><Link href="/sw_002">고객 화면 보기 ↗</Link><button type="button" aria-label="운영자 로그아웃" onClick={() => void handleLogout()} disabled={loggingOut}>{loggingOut ? "로그아웃 중..." : "로그아웃"}</button></div>
     </aside>
     <section className={styles.workspace}>
-      <header className={styles.topbar}><div><small>{isPartner ? "매장 담당자" : "플랫폼 관리자"} / {title}</small><h1>{title}</h1></div><div className={styles.topActions}><button>?</button><button>♢<i /></button><span><b>{isPartner ? "김성수" : "관리자"}</b><small>{isPartner ? "매장 담당자" : "SUPER ADMIN"}</small></span></div></header>
+      <header className={styles.topbar}><div><small>{isPartner ? "매장 담당자" : "통합 관리자"} / {title}</small><h1>{title}</h1></div><div className={styles.topActions}><button>?</button><button>♢<i /></button><span><b>{isPartner ? "김성수" : "관리자"}</b><small>{isPartner ? "매장 담당자" : "통합 관리자"}</small></span></div></header>
       <div className={styles.content}>
-        {isPartner && <section className={storeStyles.globalStoreBar}><div><small>현재 관리 매장</small><strong>{selectedStore?.name ?? "선택된 매장이 없습니다"}</strong><span>{selectedStore ? `${selectedStore.category} · ${selectedStore.address}` : "매장정보에서 신규 매장을 등록해 주세요."}</span></div><label>매장 변경<select value={selectedStoreId ?? ""} onChange={(event) => { setMenus([]); setEvents([]); setCoupons([]); setSelectedStoreId(event.target.value || null); }}><option value="" disabled>매장을 선택해 주세요</option>{storeList.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}</select></label></section>}
-        {section === "dashboard" && (isPartner ? <PartnerDashboard events={events} setSection={setSection} store={selectedStore} /> : <AdminDashboard setSection={setSection} />)}
+        <section className={storeStyles.globalStoreBar}><div><small>현재 관리 매장</small><strong>{selectedStore?.name ?? "선택된 매장이 없습니다"}</strong><span>{selectedStore ? `${selectedStore.category} · ${selectedStore.address}` : "매장정보에서 신규 매장을 선택해 주세요."}</span></div><label>매장 변경<select value={selectedStoreId ?? ""} onChange={(event) => { setMenus([]); setEvents([]); setCoupons([]); setSelectedStoreId(event.target.value || null); }}><option value="" disabled>매장을 선택해 주세요</option>{storeList.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}</select></label></section>
+        {section === "dashboard" && <PartnerDashboard events={events} setSection={setSection} store={selectedStore} />}
         {section === "store" && <StoreEditor key={selectedStoreId ?? "new-store"} notify={notify} storeList={storeList} setStoreList={setStoreList} storeId={selectedStoreId} setStoreId={setSelectedStoreId} kakaoJavascriptKey={kakaoJavascriptKey} />}
+        {section === "store-manage" && mode === "admin" && <StoreManagementPanel stores={storeList} onSelect={setManagedStoreId} />}
         {section === "menus" && <MenuManager menus={menus} setMenus={setMenus} store={selectedStore} onAdd={() => selectedStoreId ? setModal("menu") : notify("먼저 관리할 매장을 선택해 주세요.")} onEdit={(menu) => { setEditingMenu(menu); setModal("menu-edit"); }} notify={notify} />}
-        {section === "events" && (isPartner ? <EventManager events={events} setEvents={setEvents} store={selectedStore} onAdd={() => selectedStoreId ? setModal("event") : notify("먼저 관리할 매장을 선택해 주세요.")} onEdit={(event) => { setEditingEvent(event); setModal("event-edit"); }} notify={notify} /> : <EventMonitor notify={notify} />)}
+        {section === "events" && <EventManager events={events} setEvents={setEvents} store={selectedStore} onAdd={() => selectedStoreId ? setModal("event") : notify("먼저 관리할 매장을 선택해 주세요.")} onEdit={(event) => { setEditingEvent(event); setModal("event-edit"); }} notify={notify} />}
         {section === "coupons" && <CouponManager coupons={coupons} setCoupons={setCoupons} store={selectedStore} onAdd={() => selectedStoreId ? setModal("coupon") : notify("먼저 관리할 매장을 선택해 주세요.")} onEdit={(coupon) => { setEditingCoupon(coupon); setModal("coupon-edit"); }} notify={notify} />}
-        {section === "stats" && <Stats admin={!isPartner} />}
+        {section === "stats" && mode === "admin" && <Stats admin />}
         {section === "stores" && <StoreManager notify={notify} />}
         {section === "push" && <PushManager onAdd={() => setModal("push")} notify={notify} />}
         {section === "users" && <UserManager />}
@@ -409,6 +431,7 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
     {modal === "coupon" && <Modal title="쿠폰 등록" onClose={() => setModal(null)}><CouponForm onSubmit={addCoupon} onClose={() => setModal(null)} /></Modal>}
     {modal === "coupon-edit" && editingCoupon && <Modal title="쿠폰 수정" onClose={() => setModal(null)}><CouponForm coupon={editingCoupon} onSubmit={updateCoupon} onClose={() => setModal(null)} /></Modal>}
     {modal === "push" && <Modal title="푸시 알림 발송" onClose={() => setModal(null)}><form onSubmit={(event) => { event.preventDefault(); setModal(null); notify("푸시 발송을 예약했습니다."); }}><label>알림 제목<input required placeholder="알림 제목" /></label><label>알림 내용<textarea required rows={4} placeholder="사용자에게 보낼 내용을 입력하세요" /></label><div className={styles.formRow}><label>대상<select><option>전체 사용자</option><option>1km 이내 사용자</option><option>쿠폰 관심 사용자</option></select></label><label>발송<select><option>즉시 발송</option><option>예약 발송</option></select></label></div><ModalButtons close={() => setModal(null)} label="발송 예약" /></form></Modal>}
+    {managedStoreId && mode === "admin" && <Modal title="매장정보 수정" wide onClose={() => setManagedStoreId(null)}><StoreEditor key={`managed-${managedStoreId}`} notify={notify} storeList={storeList} setStoreList={setStoreList} storeId={managedStoreId} setStoreId={setManagedStoreId} kakaoJavascriptKey={kakaoJavascriptKey} /></Modal>}
     {toast && <div className={styles.toast}>{toast}</div>}
   </main>;
 }
@@ -416,6 +439,9 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
 function PageHead({ eyebrow, title, text, action }: { eyebrow: string; title: string; text: string; action?: React.ReactNode }) { return <div className={styles.pageHead}><div><span>{eyebrow}</span><h2>{title}</h2><p>{text}</p></div>{action}</div>; }
 function PartnerDashboard({ events, setSection, store }: { events: EventRecord[]; setSection: (s: Section) => void; store: StoreRecord | null }) { return <><PageHead eyebrow="STORE OVERVIEW" title={`${store?.name ?? "선택 매장"}, 오늘의 운영 현황`} text="매장 노출과 이벤트 성과를 한눈에 확인하세요." action={<button className={styles.primary} onClick={() => setSection("events")}>＋ 이벤트 등록</button>} /><Metrics values={[["오늘 지도 클릭","328","+12.4%"],["쿠폰 다운로드","84","+8.2%"],["쿠폰 사용","31","사용률 36.9%"],["진행중 이벤트",String(events.filter(e=>e.status === "ACTIVE").length),`전체 ${events.length}건`]]} /><div className={styles.dashGrid}><Chart title="최근 7일 이벤트 조회" /><section className={styles.panel}><PanelHead title="최근 이벤트" text="선택 매장 DB 기준" /><div className={styles.compactList}>{events.slice(0,3).map(e=><div key={e.id}><i>{e.map_icon}</i><span><b>{e.title}</b><small>{new Date(e.start_at).toLocaleDateString("ko-KR")} - {new Date(e.end_at).toLocaleDateString("ko-KR")}</small></span><Status value={eventStatusLabels[e.status] ?? e.status}/></div>)}</div></section></div><section className={styles.guide}><b>{store?.name ?? "선택 매장"} 노출 상태를 확인하세요</b><p>대표 메뉴와 진행 중 이벤트가 선택한 매장을 기준으로 관리됩니다.</p><button onClick={() => setSection("store")}>매장 정보 확인 →</button></section></>; }
 function AdminDashboard({ setSection }: { setSection:(s:Section)=>void }) { return <><PageHead eyebrow="PLATFORM OVERVIEW" title="동네온 서비스 현황" text="전체 업체와 이벤트, 쿠폰 사용 현황을 확인하세요." action={<button className={styles.primary} onClick={()=>setSection("stores")}>업체 검토 3건</button>} /><Metrics values={[["등록 업체","128","이번 달 +14"],["활성 이벤트","284","오늘 +23"],["쿠폰 다운로드","12.8K","+18.6%"],["푸시 클릭률","8.4%","목표 대비 +1.2%"]]} /><div className={styles.dashGrid}><Chart title="서비스 이용 추이" /><section className={styles.panel}><PanelHead title="업체 승인 대기" text="사업자 정보 검토 필요" /><div className={styles.compactList}>{stores.slice(1).map((s,i)=><div key={s.name}><i>{i+1}</i><span><b>{s.name}</b><small>{s.location} · {s.category}</small></span><Status value={s.status}/></div>)}</div></section></div></>; }
+function StoreManagementPanel({ stores: storeList, onSelect }: { stores: StoreRecord[]; onSelect: (id: string) => void }) {
+  return <><PageHead eyebrow="STORE MANAGEMENT" title="매장정보관리" text="등록된 모든 매장을 확인하고 매장 정보를 수정합니다." /><section className={styles.panel}><div className={styles.tableHead}><span>매장명</span><span>업종</span><span>주소</span><span>상태</span><span /></div>{storeList.length === 0 ? <div className={storeStyles.emptyMenus}>등록된 매장이 없습니다.</div> : storeList.map((store) => <div className={styles.tableRow} key={store.id}><span><i>{store.name.slice(0, 1)}</i><b>{store.name}<small>{store.phone || "연락처 미등록"}</small></b></span><span>{store.category}</span><span>{store.address}</span><Status value="정상" /><span><button type="button" onClick={() => onSelect(store.id)}>수정</button></span></div>)}</section></>;
+}
 function Metrics({ values }: { values:string[][] }) { return <div className={styles.metrics}>{values.map((v,i)=><article key={v[0]}><span>{v[0]}</span><strong>{v[1]}</strong><small className={i===3?styles.neutral:""}>{v[2]}</small></article>)}</div>; }
 function Chart({ title }: { title:string }) { return <section className={styles.panel}><PanelHead title={title} text="실시간 집계 기준" /><div className={styles.chart}><div className={styles.chartBars}>{[42,58,49,72,64,82,91].map((h,i)=><i key={i} style={{height:`${h}%`}}><b>{["월","화","수","목","금","토","일"][i]}</b></i>)}</div></div></section>; }
 function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kakaoJavascriptKey }: {
@@ -443,6 +469,7 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [saving, setSaving] = useState(false);
+  const coordinateLookupRef = useRef<Promise<{ latitude: number; longitude: number }> | null>(null);
 
   function startNewStore() {
     setStoreId(null);
@@ -511,7 +538,10 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
       const currentLongitude = Number(longitude);
       const coordinates = Number.isFinite(currentLatitude) && Number.isFinite(currentLongitude) && latitude && longitude
         ? { latitude: currentLatitude, longitude: currentLongitude }
-        : await resolveCoordinates(address);
+        : coordinateLookupRef.current
+          ? await coordinateLookupRef.current
+          : await resolveCoordinates(address);
+      coordinateLookupRef.current = null;
       setLatitude(String(coordinates.latitude));
       setLongitude(String(coordinates.longitude));
 
@@ -587,12 +617,22 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
         const geocoder = postcodeApi.maps?.services?.Geocoder ? new postcodeApi.maps.services.Geocoder() : null;
         const addressForGeocode = selectedAddress || data.address;
         if (geocoder && postcodeApi.maps?.services?.Status.OK) {
-          geocoder.addressSearch(addressForGeocode, (results, status) => {
-            if (status === postcodeApi.maps?.services?.Status.OK && results[0]) {
-              setLongitude(results[0].x);
-              setLatitude(results[0].y);
-            }
+          coordinateLookupRef.current = new Promise((resolve, reject) => {
+            geocoder.addressSearch(addressForGeocode, (results, status) => {
+              if (status === postcodeApi.maps?.services?.Status.OK && results[0]) {
+                const longitudeValue = Number(results[0].x);
+                const latitudeValue = Number(results[0].y);
+                if (Number.isFinite(latitudeValue) && Number.isFinite(longitudeValue)) {
+                  setLongitude(String(longitudeValue));
+                  setLatitude(String(latitudeValue));
+                  resolve({ latitude: latitudeValue, longitude: longitudeValue });
+                  return;
+                }
+              }
+              reject(new Error("선택한 주소의 좌표를 확인하지 못했습니다. 주소를 다시 검색해 주세요."));
+            });
           });
+          void coordinateLookupRef.current.catch(() => undefined);
         }
         setDetailAddress("");
         notify("주소를 선택했습니다. 상세주소를 입력해 주세요.");
@@ -602,7 +642,19 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
 
   return <>
     <Script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" onReady={() => setPostcodeReady(true)} onError={() => notify("주소 검색 서비스를 불러오지 못했습니다.")} />
-    {kakaoJavascriptKey && <Script src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJavascriptKey}&libraries=services`} strategy="afterInteractive" />}
+    {kakaoJavascriptKey && (
+      <Script
+        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(kakaoJavascriptKey.trim())}&libraries=services&autoload=false`}
+        strategy="afterInteractive"
+        onReady={() => {
+          const maps = (window as PostcodeWindow).kakao?.maps;
+          if (maps?.load) {
+            maps.load(() => undefined);
+          }
+        }}
+        onError={() => notify("카카오 지도 SDK를 불러오지 못했습니다. JavaScript 키와 등록 도메인을 확인해 주세요.")}
+      />
+    )}
     <PageHead eyebrow="STORE PROFILE" title="매장 기본정보" text="여러 매장을 등록하고 매장별 정보를 관리합니다." action={<button className={styles.primary} onClick={saveStore} disabled={saving}>{saving ? "저장 중..." : "변경사항 저장"}</button>} />
     <section className={storeStyles.storeSelector}><div><strong>{storeId ? "선택 매장 정보 수정" : "신규 매장 등록"}</strong><span>{storeId ? "위의 현재 관리 매장에서 다른 매장을 선택할 수 있습니다." : "아래 정보를 입력하고 저장해 주세요."}</span></div><button type="button" onClick={startNewStore}>＋ 신규 매장 추가</button><span>등록된 매장 {storeList.length}개</span></section>
     <section className={styles.formPanel}>
@@ -772,5 +824,5 @@ function Stats({admin}:{admin:boolean}) { return <><PageHead eyebrow="PERFORMANC
 function UserManager() { return <><PageHead eyebrow="USER CONTROL" title="사용자 관리" text="회원 상태와 쿠폰·알림 이용 현황을 확인합니다."/><Metrics values={[["전체 회원","18.4K","이번 달 +824"],["활성 회원","12.7K","활성률 69%"],["알림 동의","9.8K","동의율 53%"],["휴면·탈퇴","1.2K","이번 달 48"]]}/><section className={styles.panel}><div className={styles.toolbar}><input placeholder="이메일 또는 닉네임 검색"/><select><option>전체 회원</option><option>정상</option><option>휴면</option></select></div><div className={styles.compactList}>{["동네탐험가","쿠폰수집가","성수마실","오늘뭐먹지"].map((x,i)=><div key={x}><i>U{i+1}</i><span><b>{x}</b><small>user{i+1}@example.com · 쿠폰 {i+2}개</small></span><Status value="정상"/></div>)}</div></section></>; }
 function PanelHead({title,text}:{title:string;text:string}) { return <div className={styles.panelHead}><div><h3>{title}</h3><p>{text}</p></div><button>더보기 →</button></div>; }
 function Status({value}:{value:string}) { return <em className={`${styles.status} ${["정상","진행중","사용중","발송완료"].includes(value)?styles.good:["검토중","검토필요","예약"].includes(value)?styles.wait:styles.off}`}>{value}</em>; }
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}) { return <div className={styles.backdrop} onMouseDown={onClose}><section className={styles.modal} onMouseDown={e=>e.stopPropagation()}><header><h2>{title}</h2><button onClick={onClose}>×</button></header>{children}</section></div>; }
+function Modal({title,onClose,children,wide}:{title:string;onClose:()=>void;children:React.ReactNode;wide?:boolean}) { return <div className={styles.backdrop} onMouseDown={onClose}><section className={`${styles.modal} ${wide ? styles.wideModal : ""}`} onMouseDown={e=>e.stopPropagation()}><header><h2>{title}</h2><button type="button" onClick={onClose}>×</button></header>{children}</section></div>; }
 function ModalButtons({close,label}:{close:()=>void;label:string}) { return <footer><button type="button" onClick={close}>취소</button><button className={styles.primary}>{label}</button></footer>; }

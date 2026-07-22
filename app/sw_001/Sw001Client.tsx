@@ -126,6 +126,68 @@ type KakaoMaps = {
   load: (callback: () => void) => void;
 };
 
+let kakaoMapsSdkPromise: Promise<void> | undefined;
+
+function loadKakaoMapsSdk(javascriptKey: string) {
+  if (kakaoMapsSdkPromise) {
+    return kakaoMapsSdkPromise;
+  }
+
+  kakaoMapsSdkPromise = new Promise<void>((resolve, reject) => {
+    const finish = () => {
+      if (!window.kakao?.maps?.load) {
+        reject(new Error("카카오 지도 SDK가 정상적으로 초기화되지 않았습니다."));
+        return;
+      }
+
+      window.kakao.maps.load(() => resolve());
+    };
+
+    if (window.kakao?.maps) {
+      finish();
+      return;
+    }
+
+    const scriptId = "kakao-map-sdk";
+    const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if (existingScript) {
+      if (existingScript.dataset.loaded === "true") {
+        finish();
+        return;
+      }
+
+      existingScript.addEventListener("load", finish, { once: true });
+      existingScript.addEventListener(
+        "error",
+        () => reject(new Error("카카오 지도 SDK를 불러오지 못했습니다.")),
+        { once: true },
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.async = true;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(javascriptKey)}&autoload=false`;
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "true";
+      finish();
+    }, { once: true });
+    script.addEventListener(
+      "error",
+      () => reject(new Error("카카오 지도 SDK를 불러오지 못했습니다. 도메인 등록과 JavaScript 키를 확인해 주세요.")),
+      { once: true },
+    );
+    document.head.appendChild(script);
+  }).catch((error) => {
+    kakaoMapsSdkPromise = undefined;
+    throw error;
+  });
+
+  return kakaoMapsSdkPromise;
+}
+
 declare global {
   interface Window {
     kakao?: {
@@ -1152,28 +1214,9 @@ function KakaoMapScreen({ javascriptKey }: { javascriptKey: string }) {
       setMapStatus("ready");
     };
 
-    if (window.kakao?.maps) {
-      window.kakao.maps.load(renderMap);
-      return;
-    }
-
-    const scriptId = "kakao-map-sdk";
-    const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if (existingScript) {
-      existingScript.addEventListener("load", () => window.kakao?.maps.load(renderMap), {
-        once: true,
-      });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.async = true;
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${javascriptKey}&autoload=false`;
-    script.addEventListener("load", () => window.kakao?.maps.load(renderMap), { once: true });
-    script.addEventListener("error", () => setMapStatus("error"), { once: true });
-    document.head.appendChild(script);
+    loadKakaoMapsSdk(javascriptKey)
+      .then(renderMap)
+      .catch(() => setMapStatus("error"));
   }, [javascriptKey]);
 
   return (
