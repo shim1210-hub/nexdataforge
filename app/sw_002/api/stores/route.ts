@@ -14,6 +14,8 @@ type StorePayload = {
   addressDetail?: string;
   openTime?: string;
   closeTime?: string;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 type KakaoAddressResponse = {
@@ -54,7 +56,7 @@ function validate(payload: StorePayload) {
 }
 
 async function geocodeAddress(address: string) {
-  const restApiKey = process.env.KAKAO_REST_API_KEY;
+  const restApiKey = process.env.KAKAO_REST_API_KEY?.trim().replace(/^"|"$/g, "");
   if (!restApiKey) throw new Error("KAKAO_REST_API_KEY 환경 변수가 설정되어 있지 않습니다.");
 
   const url = new URL("https://dapi.kakao.com/v2/local/search/address.json");
@@ -111,9 +113,29 @@ export async function POST(request: Request) {
     const operator = await requireOperator();
     const payload = (await request.json()) as StorePayload;
     validate(payload);
+    if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
+      throw new Error("주소 검색으로 위도와 경도를 확인한 후 저장해 주세요.");
+    }
+    const coordinates = { latitude: payload.latitude!, longitude: payload.longitude! };
+    if (!payload.id && operator.role === "STORE_MANAGER") {
+      const created = await getPool().query(
+        `insert into sw002_stores
+           (name, category, description, phone, address, address_detail, opening_hours, latitude, longitude)
+         values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9)
+         returning id::text as id, name, category, description, phone, address, address_detail,
+                   latitude::text as latitude, longitude::text as longitude, opening_hours, status, is_map_visible`,
+        [payload.name?.trim(), payload.category?.trim(), payload.description?.trim() || null,
+         payload.phone?.trim() || null, payload.address?.trim(), payload.addressDetail?.trim() || null,
+         JSON.stringify({ open: payload.openTime, close: payload.closeTime }), coordinates.latitude, coordinates.longitude],
+      );
+      await getPool().query(
+        `insert into sw002_store_members (store_id, user_id, member_role, is_active) values ($1, $2, 'MANAGER', true)`,
+        [created.rows[0].id, operator.userId],
+      );
+      return Response.json({ store: created.rows[0] });
+    }
     if (payload.id) await assertStoreAccess(payload.id);
     if (!payload.id && operator.role !== "ADMIN") throw new Error("신규 매장 생성은 통합관리자만 할 수 있습니다.");
-    const coordinates = await geocodeAddress(payload.address?.trim() ?? "");
 
     const values = [
       payload.name?.trim(),
@@ -158,5 +180,20 @@ export async function POST(request: Request) {
     return Response.json({ store: result.rows[0] });
   } catch (error) {
     return Response.json({ error: getErrorMessage(error) }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    await requireOperator("ADMIN");
+    const storeId = new URL(request.url).searchParams.get("id") ?? "";
+    if (!/^\d+$/.test(storeId)) throw new Error("삭제할 매장을 선택해 주세요.");
+    const pool = getPool();
+    await pool.query("delete from sw002_store_members where store_id = $1", [storeId]);
+    const deleted = await pool.query("delete from sw002_stores where id = $1", [storeId]);
+    if (!deleted.rowCount) throw new Error("삭제할 매장을 찾을 수 없습니다.");
+    return Response.json({ deleted: true });
+  } catch (error) {
+    return Response.json({ error: getErrorMessage(error) }, { status: 403 });
   }
 }

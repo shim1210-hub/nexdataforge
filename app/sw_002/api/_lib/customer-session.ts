@@ -42,7 +42,16 @@ export async function setCustomerSession(userId: string) {
 }
 
 export async function clearCustomerSession() {
-  (await cookies()).delete(cookieName);
+  // The session is scoped to /sw_002, so deletion must use the same path.
+  // Calling delete() without it can leave the browser cookie active.
+  (await cookies()).set(cookieName, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/sw_002",
+    maxAge: 0,
+    expires: new Date(0),
+  });
 }
 
 export async function getCustomerUserId() {

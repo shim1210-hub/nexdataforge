@@ -328,7 +328,12 @@ export default function Sw002Client({
   }
 
   async function logout() {
-    await fetch("/sw_002/api/customer-auth", { method: "DELETE" });
+    const response = await fetch("/sw_002/api/customer-auth", { method: "DELETE", cache: "no-store" });
+    if (!response.ok) {
+      setToast("로그아웃하지 못했습니다. 다시 시도해 주세요.");
+      window.setTimeout(() => setToast(""), 2200);
+      return;
+    }
     setUser(null);
     setSavedCoupons([]);
     setTab("home");
@@ -352,7 +357,7 @@ export default function Sw002Client({
         <nav className={styles.desktopNav} aria-label="주요 메뉴">
           {([['home','지도 홈'],['events','이벤트'],['coupons','내 매장'],['my','마이']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? styles.activeNav : ""} onClick={() => setTab(id)}>{label}</button>)}
         </nav>
-        <div className={styles.headerActions}><div className={styles.operatorLinks}><span>운영자 전용</span><Link className={styles.portalLink} href="/sw_002/partner">매장관리자</Link><Link className={styles.portalLink} href="/sw_002/admin">통합관리자</Link></div><button onClick={() => setFilterOpen(true)}>필터</button>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
+        <div className={styles.headerActions}><div className={styles.operatorLinks}><Link className={styles.portalLink} href="/sw_002/partner">매장관리자</Link><Link className={styles.portalLink} href="/sw_002/admin">통합관리자</Link></div>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
       </header>
 
       {tab === "home" && <>
@@ -390,12 +395,18 @@ export default function Sw002Client({
 
         <section className={styles.eventSection}><div className={styles.sectionTitle}><div><span>REGISTERED STORES</span><h2>지도에 등록된 매장</h2></div><button onClick={() => setTab("events")}>전체보기 →</button></div><div className={styles.cards}>{stores.slice(0,3).map((store) => <article key={store.id} onClick={() => { selectStore(store, "STORE_DETAIL"); window.scrollTo({ top: 620, behavior: "smooth" }); }}><div className={`${styles.cardVisual} ${mapStyles.cardPhoto}`} style={store.image_url ? { backgroundImage: `url(${JSON.stringify(store.image_url).slice(1, -1)})` } : undefined}><span>{store.image_url ? "" : store.emoji}</span><b className={`${styles.badge} ${styles[store.tone]}`}>{store.badge}</b><button aria-label="관심 매장" onClick={(event) => { event.stopPropagation(); saveCoupon(store.id); }}>♡</button></div><div><small>{store.categoryLabel} · {store.address}</small><h3>{store.name}</h3><p>{store.offer}</p><span>지도에서 보기 →</span></div></article>)}</div></section>
 
-        <section className={styles.promo}><div><span>동네 매장을 더 쉽게 발견하세요</span><h2>실제 주소와 좌표로<br />가까운 매장을 연결합니다.</h2><button onClick={() => window.scrollTo({ top: 620, behavior: "smooth" })}>지도 보기</button></div><Image src="/sw_002/mobile-map-concept.png" alt="모바일 지도 서비스 화면" width={860} height={486} /></section>
       </>}
 
       {tab === "events" && <SimpleScreen eyebrow="REGISTERED STORES" title="등록 매장" description="DB에 등록된 매장과 현재 이벤트를 확인하세요." stores={stores} onStore={openStoreDetail} />}
       {tab === "coupons" && (user ? <SimpleScreen eyebrow="SAVED STORES" title="내 매장" description="즐겨찾기로 저장한 매장과 이벤트를 확인하세요." stores={stores.filter((store) => savedCoupons.includes(store.id))} onStore={openStoreDetail} empty="아직 저장한 매장이 없습니다. 지도에서 관심 매장을 저장해 보세요." /> : <LoginRequired onLogin={() => setAuthOpen(true)} />)}
       {tab === "my" && (user ? <MyScreen user={user} radius={radius} setRadius={setRadius} savedCount={savedCoupons.length} storeCount={stores.length} onLogout={logout} /> : <LoginRequired onLogin={() => setAuthOpen(true)} />)}
+
+      <footer className={styles.siteFooter}>
+        <nav className={styles.footerLinks} aria-label="정책 및 안내"><a href="#notice">공지사항</a><a href="#terms">이용약관</a><a href="#privacy">개인정보처리방침</a><a href="#refund">환불정책</a><a href="mailto:test@gmail.com">문의하기</a></nav>
+        <div className={styles.businessInfo}>
+          <p><b>상호명</b> 동네온 <b>대표자명</b> 꼬부기심</p><p><b>사업자등록번호</b> 123-45-67890 <b>통신판매업신고번호</b> 제2026-경기부천-0001</p><p><b>주소</b> 경기도 부천시 범안로 <b>대표전화</b> 010-0000-0000</p><p><b>이메일</b> <a href="mailto:test@gmail.com">test@gmail.com</a></p>
+        </div><p className={styles.copyright}>ⓒ 2026 동네온. All rights reserved.</p>
+      </footer>
 
       <nav className={styles.mobileNav}>{([['home','-','지도'],['events','-','매장'],['coupons','-','저장'],['my','-','MY']] as [Tab,string,string][]).map(([id,icon,label]) => <button key={id} className={tab === id ? styles.mobileActive : ""} onClick={() => setTab(id)}><b>{icon}</b><span>{label}</span>{id === 'coupons' && savedCoupons.length > 0 && <i>{savedCoupons.length}</i>}</button>)}</nav>
 
