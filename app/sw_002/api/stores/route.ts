@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     const payload = (await request.json()) as StorePayload;
     validate(payload);
     if (!Number.isFinite(payload.latitude) || !Number.isFinite(payload.longitude)) {
-      throw new Error("주소 검색으로 위도와 경도를 확인한 후 저장해 주세요.");
+      throw new Error("주소 검색으로 위도/경도를 확인한 후 저장해 주세요.");
     }
     const coordinates = { latitude: payload.latitude!, longitude: payload.longitude! };
     if (!payload.id && operator.role === "STORE_MANAGER") {
