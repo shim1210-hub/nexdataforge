@@ -31,8 +31,10 @@ type StoreRecord = {
   id: string;
   name: string;
   category: string;
+  category2: string | null;
   description: string | null;
   phone: string | null;
+  zip_cd: string | null;
   address: string;
   address_detail: string | null;
   latitude: string | null;
@@ -67,6 +69,14 @@ type EventRecord = {
   status: string;
   view_count: string;
 };
+type EventTypeOption = { code: string; code_name: string };
+type CommonCodeOption = { code: string; code_name: string; parent_grp_cd?: string | null };
+
+function eventDateTime(data: FormData, name: "start" | "end") {
+  const date = String(data.get(name) ?? "");
+  const time = String(data.get(`${name}Time`) ?? "00:00");
+  return date.includes("T") ? date : `${date}T${time}`;
+}
 
 type CouponRecord = {
   id: string;
@@ -244,6 +254,55 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
       .catch((error: unknown) => notify(error instanceof Error ? error.message : "이벤트를 불러오지 못했습니다."));
   }, [selectedStoreId, notify]);
 
+  useEffect(() => {
+    if (modal !== "event" && modal !== "event-edit") return;
+    const startElement = document.querySelector('input[name="start"]') as HTMLInputElement | null;
+    const form = startElement?.form ?? null;
+    if (!form) return;
+    const typeSelect = form.elements.namedItem("type") as HTMLSelectElement | null;
+    const startInput = form.elements.namedItem("start") as HTMLInputElement | null;
+    const endInput = form.elements.namedItem("end") as HTMLInputElement | null;
+    if (!typeSelect || !startInput || !endInput) return;
+    void fetch("/sw_002/api/events?storeId=" + encodeURIComponent(selectedStoreId ?? ""), { cache: "no-store" })
+      .then((response) => response.json() as Promise<{ eventTypes?: EventTypeOption[] }>)
+      .then((result) => {
+        if (result.eventTypes?.length) {
+          const current = typeSelect.value;
+          typeSelect.replaceChildren(...result.eventTypes.map((item) => new Option(item.code_name, item.code)));
+          typeSelect.value = result.eventTypes.some((item) => item.code === current) ? current : result.eventTypes[0].code;
+        }
+      });
+    const addTimeInput = (dateInput: HTMLInputElement, name: "start" | "end", value = "") => {
+      const existing = form.elements.namedItem(`${name}Time`) as HTMLInputElement | null;
+      if (existing) return existing;
+      const timeInput = document.createElement("input");
+      timeInput.type = "time";
+      timeInput.name = `${name}Time`;
+      timeInput.required = true;
+      timeInput.step = "60";
+      timeInput.value = value || "00:00";
+      timeInput.setAttribute("aria-label", name === "start" ? "시작 시간" : "종료 시간");
+      timeInput.style.marginTop = "8px";
+      dateInput.insertAdjacentElement("afterend", timeInput);
+      return timeInput;
+    };
+    const toTime = (value: string) => {
+      const date = new Date(value);
+      return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    };
+    addTimeInput(startInput, "start", editingEvent ? toTime(editingEvent.start_at) : "");
+    addTimeInput(endInput, "end", editingEvent ? toTime(editingEvent.end_at) : "");
+    if (editingEvent) {
+      const toDate = (value: string) => {
+        const date = new Date(value);
+        const pad = (number: number) => String(number).padStart(2, "0");
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      };
+      startInput.value = toDate(editingEvent.start_at);
+      endInput.value = toDate(editingEvent.end_at);
+    }
+  }, [modal, selectedStoreId, editingEvent]);
+
   async function addMenu(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedStoreId) return notify("먼저 관리할 매장을 선택해 주세요.");
@@ -271,7 +330,7 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
       const response = await fetch("/sw_002/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeId: selectedStoreId, title: data.get("title"), description: data.get("description"), eventType: data.get("type"), mapIcon: data.get("icon"), startAt: data.get("start"), endAt: data.get("end") }),
+        body: JSON.stringify({ storeId: selectedStoreId, title: data.get("title"), description: data.get("description"), eventType: data.get("type"), mapIcon: data.get("icon"), startAt: eventDateTime(data, "start"), endAt: eventDateTime(data, "end") }),
       });
       const result = await response.json() as { events?: EventRecord[]; error?: string };
       if (!response.ok) throw new Error(result.error || "이벤트를 등록하지 못했습니다.");
@@ -312,7 +371,7 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
       const response = await fetch("/sw_002/api/events", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingEvent.id, storeId: selectedStoreId, title: data.get("title"), description: data.get("description"), eventType: data.get("type"), mapIcon: data.get("icon"), startAt: data.get("start"), endAt: data.get("end") }),
+        body: JSON.stringify({ id: editingEvent.id, storeId: selectedStoreId, title: data.get("title"), description: data.get("description"), eventType: data.get("type"), mapIcon: data.get("icon"), startAt: eventDateTime(data, "start"), endAt: eventDateTime(data, "end") }),
       });
       const result = await response.json() as { events?: EventRecord[]; error?: string };
       if (!response.ok) throw new Error(result.error || "이벤트를 수정하지 못했습니다.");
@@ -454,11 +513,12 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
 }) {
   const initialStore = storeList.find((store) => store.id === storeId);
   const [name, setName] = useState(initialStore?.name ?? "");
-  const [category, setCategory] = useState(initialStore?.category ?? "한식");
+  const [category, setCategory] = useState(initialStore?.category ?? "");
+  const [category2, setCategory2] = useState(initialStore?.category2 ?? "");
   const [description, setDescription] = useState(initialStore?.description ?? "");
   const [phone, setPhone] = useState(initialStore?.phone ?? "");
   const [postcodeReady, setPostcodeReady] = useState(false);
-  const [zonecode, setZonecode] = useState("");
+  const [zonecode, setZonecode] = useState(initialStore?.zip_cd ?? "");
   const [address, setAddress] = useState(initialStore?.address ?? "");
   const [detailAddress, setDetailAddress] = useState(initialStore?.address_detail ?? "");
   const [latitude, setLatitude] = useState(initialStore?.latitude ?? "");
@@ -469,12 +529,43 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [saving, setSaving] = useState(false);
+  const [majorCategories, setMajorCategories] = useState<CommonCodeOption[]>([]);
+  const [middleCategories, setMiddleCategories] = useState<CommonCodeOption[]>([]);
+  const [majorCategory, setMajorCategory] = useState("");
   const coordinateLookupRef = useRef<Promise<{ latitude: number; longitude: number }> | null>(null);
+
+  useEffect(() => {
+    void fetch("/sw_002/api/store-categories", { cache: "no-store" })
+      .then(async (response) => {
+        const result = await response.json() as {
+          majorCategories?: CommonCodeOption[];
+          middleCategories?: CommonCodeOption[];
+          error?: string;
+        };
+        if (!response.ok) throw new Error(result.error || "업종 목록을 불러오지 못했습니다.");
+        return result;
+      })
+      .then(({ majorCategories = [], middleCategories = [] }) => {
+        setMajorCategories(majorCategories);
+        setMiddleCategories(middleCategories);
+        const initialMajor = majorCategories.some((item) => item.code === category)
+          ? category
+          : majorCategories[0]?.code || "";
+        setMajorCategory(initialMajor);
+        setCategory(initialMajor);
+        const availableMiddle = middleCategories.filter((item) => item.parent_grp_cd === initialMajor);
+        setCategory2((current) => availableMiddle.some((item) => item.code === current)
+          ? current
+          : availableMiddle[0]?.code || "");
+      })
+      .catch((error: unknown) => notify(error instanceof Error ? error.message : "업종 목록을 불러오지 못했습니다."));
+  }, [notify]);
 
   function startNewStore() {
     setStoreId(null);
     setName("");
-    setCategory("한식");
+    setCategory("");
+    setCategory2("");
     setDescription("");
     setPhone("");
     setZonecode("");
@@ -550,7 +641,7 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
         response = await fetch("/sw_002/api/stores", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: storeId, name, category, description, phone, address, addressDetail: detailAddress, openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude }),
+          body: JSON.stringify({ id: storeId, name, category, category2, description, phone, zipCd: zonecode, address, addressDetail: detailAddress, openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude }),
         });
       } catch {
         throw new Error("매장 저장 API에 연결하지 못했습니다. 서버가 최신 빌드로 실행 중인지 확인해 주세요.");
@@ -657,15 +748,21 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
     )}
     <PageHead eyebrow="STORE PROFILE" title="매장 기본정보" text="여러 매장을 등록하고 매장별 정보를 관리합니다." action={<button className={styles.primary} onClick={saveStore} disabled={saving}>{saving ? "저장 중..." : "변경사항 저장"}</button>} />
     <section className={storeStyles.storeSelector}><div><strong>{storeId ? "선택 매장 정보 수정" : "신규 매장 등록"}</strong><span>{storeId ? "위의 현재 관리 매장에서 다른 매장을 선택할 수 있습니다." : "아래 정보를 입력하고 저장해 주세요."}</span></div><button type="button" onClick={startNewStore}>＋ 신규 매장 추가</button><span>등록된 매장 {storeList.length}개</span></section>
-    <section className={styles.formPanel}>
+    <section className={`${styles.formPanel} ${!storeId ? storeStyles.newStoreForm : ""}`}>
       <div className={`${styles.storeCover} ${storeStyles.storeCover}`} style={(imagePreview || imageUrl) ? { backgroundImage: `url("${imagePreview || imageUrl}")` } : undefined}>
         {!imagePreview && !imageUrl && <span>🥘</span>}
         <label className={storeStyles.imageButton}>대표 이미지 찾기<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(event) => selectImage(event.target.files?.[0])} /></label>
         <small>{imageFile ? imageFile.name : imageUrl ? "등록된 대표 이미지" : "JPG·PNG·WEBP·GIF / 최대 10MB"}</small>
       </div>
       <div className={styles.fields}>
-        <label>업체명<input value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label>업종<select value={category} onChange={(event) => setCategory(event.target.value)}>{["한식", "중식", "일식", "양식", "분식", "치킨", "피자", "햄버거·패스트푸드", "고기·구이", "족발·보쌈", "찜·탕·찌개", "회·해산물", "돈가스·카레", "국수·면요리", "샐러드·건강식", "도시락·포장전문", "카페·커피", "베이커리", "디저트·아이스크림", "주점·포차", "와인바", "아시아음식", "인도·중동음식", "뷔페", "기타 음식점"].map((categoryOption) => <option key={categoryOption}>{categoryOption}</option>)}</select></label>
+        <div className={storeStyles.storeIdentityRow}>
+          <label>업체명<input value={name} onChange={(event) => setName(event.target.value)} /></label>
+          <div className={storeStyles.categoryFields}>
+            <span>업종</span>
+            <label>대분류<select value={majorCategory} onChange={(event) => { const nextMajor = event.target.value; const availableMiddle = middleCategories.filter((item) => item.parent_grp_cd === nextMajor); setMajorCategory(nextMajor); setCategory(nextMajor); setCategory2(availableMiddle[0]?.code || ""); }}>{majorCategories.map((item) => <option key={item.code} value={item.code}>{item.code_name}</option>)}</select></label>
+            <label>중분류<select value={category2} onChange={(event) => setCategory2(event.target.value)}>{middleCategories.filter((item) => item.parent_grp_cd === majorCategory).map((item) => <option key={item.code} value={item.code}>{item.code_name}</option>)}</select></label>
+          </div>
+        </div>
         <div className={storeStyles.addressBlock}>
           <span>주소</span>
           <div className={storeStyles.addressSearchRow}>

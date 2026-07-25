@@ -1,0 +1,17 @@
+import styles from "./ReferenceHome.module.css";
+
+const benefits = [
+  ["장수포차", "소주 5,000원 → 2,000원", "120m", "/sw_002/uploads/1-feeed2e3-7961-498b-ba08-eb459cb6bdc5.jpg", "타임세일"],
+  ["서울삼겹살", "삼겹살 20% 할인", "250m", "/sw_002/uploads/2-06a8a10d-2773-4079-9579-bc02d9d9689d.jpg", "가격할인"],
+  ["치킨하우스", "생맥주 1+1", "310m", "/sw_002/uploads/3-101901c3-03c7-4d8d-b56a-c4012f3c8a5f.jpg", "곧 종료"],
+] as const;
+
+export default function ReferenceHome() {
+  return <section className={styles.page}>
+    <div className={styles.hero}><div><h1>우리 동네<br /><em>혜택</em>을 켜는 시간</h1><p>지금 내 주변<br />받을 수 있는 혜택은?</p><small>500m 안의 할인 · 쿠폰 · 타임세일을<br />지금 바로 찾아보세요.</small></div><div className={styles.stats}>{[["▣","37","진행 혜택","지금 이용 가능"],["▰","25","할인 쿠폰","다운로드 가능"],["♥","12","찜한 매장","새 혜택 3건"]].map(([icon,num,title,sub])=><article key={title}><i>{icon}</i><b>{num}</b><span>{title}</span><small>{sub}</small></article>)}</div></div>
+    <div className={styles.controls}><div className={styles.row+" "+styles.time}><button className={styles.location}>📍 <b>부천시 중동</b><span>변경 ›</span></button><button className={styles.active}>🔥 지금 이용 가능</button><button>오늘</button><button>이번 주</button><button>주말</button></div><div className={styles.row+" "+styles.radius}>{["500m","1km","3km","5km"].map((x,i)=><button className={i===0?styles.active:""} key={x}>{x}</button>)}</div><div className={styles.row+" "+styles.category}>{["🍚|한식","🥩|고기","🍻|술집","🍗|치킨","☕|카페","🥟|중식","🍣|일식","•••|기타"].map(x=>{const [icon,label]=x.split("|");return <button key={label}><i>{icon}</i>{label}</button>})}</div><div className={styles.row+" "+styles.benefit}>{["전체 혜택","％ 가격할인","♙ 주류할인","🎁 1+1 / 증정","🎟 쿠폰","♡ 서비스","◷ 타임세일","기타⌄"].map((x,i)=><button className={i===0?styles.active:""} key={x}>{x}</button>)}</div></div>
+    <div className={styles.heading}><h2>🔥 지금 받을 수 있는 혜택</h2><a>전체보기 ›</a></div><div className={styles.cards}>{benefits.map(([name,offer,distance,image,badge])=><article className={styles.card} key={name}><div className={styles.photo} style={{backgroundImage:`url(${image})`}}><b>{badge}</b></div><div className={styles.cardBody}><h3>{name}<small>{distance}</small></h3><p>{offer}</p><footer>🟢 진행중　 ◷ <i>오늘 22:00까지</i></footer><nav className={styles.actions}><button>🎟 쿠폰받기</button><button>⌖ 길찾기</button><button>♡ 찜</button></nav></div></article>)}</div>
+    <div className={styles.heading}><h2>📍 주변 혜택 지도</h2></div><div className={styles.map}><div className={styles.pins}>{["🔥","％","🏪","🎟","🔥","🏪","％","🏪","🔥"].map((x,i)=><i key={i} style={{left:`${12+(i*19)%78}%`,top:`${18+(i*29)%62}%`}}>{x}</i>)}</div><b className={styles.center}>●</b><span className={styles.legend}>🟢 진행중　 🟠 곧 종료　 🔴 종료 임박　 🟣 쿠폰 사용 가능</span><button className={styles.mapMore}>지도 크게보기 ↗</button></div>
+    <div className={styles.bottom}><article className={styles.panel}><h2>⭐ 내가 찜한 매장의 새 혜택</h2><div className={styles.saved}><img src="/sw_002/uploads/4-d0316f0d-1246-4265-bf63-23e9d91d0895.jpg" alt="" /><span><b>육즙집</b><small>직화 닭발 2,000원 할인<br />180m</small></span><i>◷ 45분 남음</i></div><div className={styles.saved}><img src="/sw_002/uploads/5-cbc9b292-be9a-4218-9734-79855482d0dc.jpg" alt="" /><span><b>당과원(디저트)</b><small>아메리카노 1+1</small></span><i>◷ 오늘 18:00까지</i></div></article><article className={styles.panel}><h2>📍 자주 가는 동네　<a>관리 ›</a></h2><div className={styles.neighborhood}><b>중동<small>현재 37개 혜택</small></b><b>상동<small>24개 혜택</small></b><b>역곡<small>18개 혜택</small></b></div><p className={styles.notice}>🔔 관심 동네에 새로운 혜택이 등록되면 알려드릴게요!<button>알림 설정하기</button></p></article></div>
+  </section>;
+}

@@ -206,6 +206,91 @@
   text-align: center;
 }
 
+.newStoreForm {
+  grid-template-columns: 250px minmax(0, 1fr) !important;
+}
+
+.newStoreForm > .storeCover {
+  display: grid;
+}
+
+.newStoreForm > div:last-child {
+  padding-left: 24px;
+}
+
+.storeIdentityRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(500px, 2fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.categoryFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  min-width: 0;
+}
+
+.categoryFields > span {
+  grid-column: 1 / -1;
+  color: #4e5b70;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.categoryFields > label {
+  display: grid !important;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  align-content: center !important;
+  gap: 8px !important;
+  min-width: 0;
+  min-height: 46px;
+  white-space: nowrap;
+}
+
+.categoryFields > label select {
+  min-width: 0;
+  height: 46px;
+}
+
+.newStoreForm > div:last-child > label > input,
+.newStoreForm > div:last-child > label > select,
+.newStoreForm > div:last-child .storeIdentityRow input,
+.newStoreForm > div:last-child .storeIdentityRow select {
+  height: 46px;
+}
+
+.newStoreForm > div:last-child {
+  row-gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .newStoreForm {
+    grid-template-columns: 1fr !important;
+  }
+
+  .newStoreForm > div:last-child {
+    padding-left: 0;
+  }
+
+  .storeIdentityRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .categoryFields {
+    grid-template-columns: 1fr;
+  }
+
+  .categoryFields > span {
+    grid-column: auto;
+  }
+}
+
 .addressBlock {
   grid-column: 1 / -1;
   display: grid;

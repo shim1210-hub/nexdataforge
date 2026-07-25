@@ -6,6 +6,7 @@ import Link from "next/link";
 import Script from "next/script";
 import mapStyles from "./map.module.css";
 import styles from "./sw002.module.css";
+import ReferenceHome from "./ReferenceHome";
 
 type Tab = "home" | "events" | "coupons" | "my";
 type ViewType = "MAP_PIN" | "STORE_DETAIL";
@@ -167,7 +168,9 @@ export default function Sw002Client({
               longitudeNumber,
               categoryLabel,
               badge: store.map_icon?.trim() || (store.event_title ? "EVENT" : "STORE"),
-              offer: store.event_title?.trim() || store.description?.trim() || "매장 상세 정보를 확인해 보세요.",
+              offer: store.events[0]
+                ? `${store.events[0].title}${store.events[0].description?.trim() ? ` · ${store.events[0].description.trim()}` : ""}`
+                : store.event_title?.trim() || store.description?.trim() || "매장 상세 정보를 확인해 보세요.",
               tone: toneList[index % toneList.length],
               emoji: categoryEmoji(categoryLabel),
             };
@@ -378,24 +381,25 @@ export default function Sw002Client({
 
       <header className={styles.header}>
         <Link href="/" className={styles.logo} aria-label="동네온 홈">
-          <i>온</i><span><strong>동네온</strong><small>LOCAL BENEFIT MAP</small></span>
+          <i>♟</i><span><strong>동네온</strong><small>LOCAL BENEFIT MAP</small></span>
         </Link>
         <nav className={styles.desktopNav} aria-label="주요 메뉴">
-          {([['home','지도 홈'],['events','이벤트'],['coupons','내 매장'],['my','마이']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? styles.activeNav : ""} onClick={() => setTab(id)}>{label}</button>)}
+          {([['home','홈'],['events','지도'],['coupons','이벤트'],['my','찜']] as [Tab,string][]).map(([id,label]) => <button key={id} className={tab === id ? styles.activeNav : ""} onClick={() => setTab(id)}>{label}</button>)}
         </nav>
-        <div className={styles.headerActions}>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
+        <div className={styles.headerActions}><button className={styles.portalLink}>사장님</button>{user ? <button className={styles.login} onClick={() => setTab("my")}>{user.nickname || "고객 마이"}</button> : <button className={styles.login} onClick={() => setAuthOpen(true)}>고객 로그인</button>}</div>
       </header>
 
-      {tab === "home" && <>
+      {tab === "home" && <ReferenceHome />}{false && <>
         <section className={styles.hero}>
           <Image src="/sw_002/local-night-coupons.png" alt="지역 상권과 쿠폰 이벤트" fill priority sizes="100vw" />
           <div className={styles.heroShade} />
-          <div className={styles.heroContent}><span>우리 동네 혜택을 켜는 시간</span><h1>가까운 매장을<br /><em>지도에서 바로.</em></h1><p>등록된 실제 매장 위치와 이벤트를 지도에서 한눈에 확인하세요.</p><div className={styles.heroSearch}><b>⌖</b><div><small>지도 기준</small><strong>등록 매장 좌표</strong></div><button onClick={() => setFilterOpen(true)}>{radius} · 필터</button></div></div>
+          <div className={styles.heroContent}><span>LOCAL BENEFIT MAP</span><h1>우리 동네<br /><em>혜택</em>을 켜는 시간</h1><p>지금 내 주변에서 받을 수 있는 혜택은?<br />500m 안의 할인·쿠폰·타임세일을<br />지금 바로 찾아보세요.</p><div className={styles.heroSearch}><b>⌖</b><div><small>현재 위치 기준</small><strong>부천시 중동</strong></div><button onClick={() => setFilterOpen(true)}>변경 · {radius}</button></div></div>
           <div className={styles.heroStat}><span><b>{stores.length}</b> 등록 매장</span><span><b>{stores.filter((store) => store.event_title).length}</b> 진행 혜택</span><span><b>{visibleStores.length}</b> 지도 표시</span></div>
         </section>
 
         <section className={styles.discovery}>
-          <div className={styles.sectionTitle}><div><span>DISCOVER ON MAP</span><h2>등록 매장 지도</h2></div></div>
+          <div className={styles.quickFilters}><button className={styles.locationFilter}>⌖ <b>부천시 중동</b><span onClick={() => setFilterOpen(true)}>변경 ›</span></button><button className={styles.activeFilter}>🔥 지금 이용 가능</button><button onClick={() => setFilterOpen(true)}>오늘</button><button onClick={() => setFilterOpen(true)}>이번 주</button><button onClick={() => setFilterOpen(true)}>주말</button></div>
+          <div className={styles.sectionTitle}><div><span>NEARBY BENEFITS</span><h2>주변 혜택 찾기</h2></div><button onClick={() => setFilterOpen(true)}>필터 설정 ›</button></div>
           <div className={styles.categories}>{categories.map((item) => <button key={item} className={category === item ? styles.selectedCategory : ""} onClick={() => setCategory(item)}><i>{item === "전체" ? "-" : categoryEmoji(item)}</i><span>{item}</span></button>)}</div>
           <div className={styles.mapLayout}>
             <div className={styles.map}>
@@ -424,7 +428,12 @@ export default function Sw002Client({
           {visibleStores.length > 0 && <div className={mapStyles.storeStrip}>{visibleStores.map((store) => <button key={store.id} className={selectedStore?.id === store.id ? mapStyles.storeStripActive : ""} onClick={() => selectStore(store, "STORE_DETAIL")}><b>{store.name}</b><span>{store.categoryLabel} · {store.address}</span></button>)}</div>}
         </section>
 
-        <section className={styles.eventSection}><div className={styles.sectionTitle}><div><span>REGISTERED STORES</span><h2>지도에 등록된 매장</h2></div><button onClick={() => setTab("events")}>전체보기 →</button></div><div className={styles.cards}>{stores.slice(0,3).map((store) => <article key={store.id} onClick={() => { selectStore(store, "STORE_DETAIL"); window.scrollTo({ top: 620, behavior: "smooth" }); }}><div className={`${styles.cardVisual} ${mapStyles.cardPhoto}`} style={store.image_url ? { backgroundImage: `url(${JSON.stringify(store.image_url).slice(1, -1)})` } : undefined}><span>{store.image_url ? "" : store.emoji}</span><b className={`${styles.badge} ${styles[store.tone]}`}>{store.badge}</b><button aria-label="관심 매장" onClick={(event) => { event.stopPropagation(); saveCoupon(store.id); }}>♡</button></div><div><small>{store.categoryLabel} · {store.address}</small><h3>{store.name}</h3><p>{store.offer}</p><span>지도에서 보기 →</span></div></article>)}</div></section>
+        <section className={styles.eventSection}><div className={styles.sectionTitle}><div><span>REGISTERED STORES</span><h2>지금 받을 수 있는 혜택</h2></div><button onClick={() => setTab("events")}>전체보기 →</button></div><div className={styles.cards}>{stores.slice(0,3).map((store) => <article key={store.id} onClick={() => { selectStore(store, "STORE_DETAIL"); window.scrollTo({ top: 620, behavior: "smooth" }); }}><div className={`${styles.cardVisual} ${mapStyles.cardPhoto}`} style={store.image_url ? { backgroundImage: `url(${JSON.stringify(store.image_url).slice(1, -1)})` } : undefined}><span>{store.image_url ? "" : store.emoji}</span><b className={`${styles.badge} ${styles[store.tone]}`}>{store.badge}</b><button aria-label="관심 매장" onClick={(event) => { event.stopPropagation(); saveCoupon(store.id); }}>♡</button></div><div><small>{store.categoryLabel} · {store.address}</small><h3>{store.name}</h3><p>{store.offer}</p><span>지도에서 보기 →</span></div></article>)}</div></section>
+
+        <section className={styles.homeBottom} aria-label="나의 동네 혜택">
+          <article className={styles.savedPanel}><div className={styles.panelHeading}><h2>⭐ 내가 찜한 매장의 새 혜택</h2><button onClick={() => setTab("coupons")}>전체보기 →</button></div>{stores.filter((store) => savedCoupons.includes(store.id)).slice(0, 2).map((store) => <button className={styles.savedRow} key={store.id} onClick={() => openStoreDetail(store)}><span className={styles.savedThumb}>{store.image_url ? <Image src={store.image_url} alt="" fill sizes="64px" /> : store.emoji}</span><span><b>{store.name}</b><small>{store.offer}</small></span><i>♡</i></button>)}{stores.filter((store) => savedCoupons.includes(store.id)).length === 0 && <p className={styles.panelEmpty}>관심 매장을 저장하면 새 혜택을 알려드려요.</p>}</article>
+          <article className={styles.neighborhoodPanel}><div className={styles.panelHeading}><h2>📍 자주 가는 동네</h2><button onClick={() => setTab("my")}>관리 →</button></div><div className={styles.neighborhoodTabs}>{["중동", "상동", "역곡"].map((name, index) => <button key={name} className={index === 0 ? styles.neighborhoodActive : ""} onClick={() => setToast(`${name} 지역을 선택했습니다.`)}><b>{name}</b><small>{Math.max(stores.length - index * 2, 0)}개 혜택</small></button>)}</div><div className={styles.alertPanel}>🔔 관심 동네에 새로운 혜택이 등록되면 알려드릴게요.<button onClick={() => setToast("알림 설정은 마이 메뉴에서 관리할 수 있습니다.")}>알림 설정하기</button></div></article>
+        </section>
 
       </>}
 
@@ -433,10 +442,7 @@ export default function Sw002Client({
       {tab === "my" && (user ? <MyScreen user={user} radius={radius} setRadius={setRadius} savedCount={savedCoupons.length} storeCount={stores.length} onLogout={logout} /> : <LoginRequired onLogin={() => setAuthOpen(true)} />)}
 
       <footer className={styles.siteFooter}>
-        <nav className={styles.footerLinks} aria-label="정책 및 안내"><a href="#notice">공지사항</a><a href="#terms">이용약관</a><a href="#privacy">개인정보처리방침</a><a href="#refund">환불정책</a><a href="mailto:test@gmail.com">문의하기</a></nav>
-        <div className={styles.businessInfo}>
-          <p><b>상호명</b> 동네온 <b>대표자명</b> 꼬부기심</p><p><b>사업자등록번호</b> 123-45-67890 <b>통신판매업신고번호</b> 제2026-경기부천-0001</p><p><b>주소</b> 경기도 부천시 범안로 <b>대표전화</b> 010-0000-0000</p><p><b>이메일</b> <a href="mailto:test@gmail.com">test@gmail.com</a></p>
-        </div><p className={styles.copyright}>ⓒ 2026 동네온. All rights reserved.</p>
+        <div className={styles.footerMain}><div><nav className={styles.footerLinks} aria-label="정책 및 안내"><a href="#notice">공지사항</a><a href="#terms">이용약관</a><a href="#privacy">개인정보처리방침</a><a href="#location">위치기반서비스 이용약관</a><a href="mailto:test@gmail.com">문의하기</a></nav><div className={styles.businessInfo}><p><b>상호명</b> 동네온　 <b>대표자</b> 홍길동　 <b>사업자등록번호</b> 123-45-67890</p><p><b>주소</b> 경기도 부천시 길주로 210　 <b>대표전화</b> 010-1234-5678　 <b>이메일</b> help@dongneon.com</p></div><p className={styles.copyright}>© 2026 동네온. All rights reserved.</p></div><div className={styles.socialLinks}><a aria-label="인스타그램">◎</a><a aria-label="페이스북">f</a><a aria-label="채팅">●</a></div></div>
       </footer>
 
       <nav className={styles.mobileNav}>{([['home','-','지도'],['events','-','매장'],['coupons','-','저장'],['my','-','MY']] as [Tab,string,string][]).map(([id,icon,label]) => <button key={id} className={tab === id ? styles.mobileActive : ""} onClick={() => setTab(id)}><b>{icon}</b><span>{label}</span>{id === 'coupons' && savedCoupons.length > 0 && <i>{savedCoupons.length}</i>}</button>)}</nav>
@@ -447,6 +453,23 @@ export default function Sw002Client({
       {toast && <div className={styles.toast}>{toast}</div>}
     </main>
   );
+}
+
+function LegacyReferenceHome() {
+  const cards = [
+    ["장수포차", "소주 5,000원 → 2,000원", "120m", "/sw_002/uploads/1-feeed2e3-7961-498b-ba08-eb459cb6bdc5.jpg", "타임세일"],
+    ["서울삼겹살", "삼겹살 20% 할인", "250m", "/sw_002/uploads/2-06a8a10d-2773-4079-9579-bc02d9d9689d.jpg", "가격할인"],
+    ["치킨하우스", "생맥주 1+1", "310m", "/sw_002/uploads/3-101901c3-03c7-4d8d-b56a-c4012f3c8a5f.jpg", "곧 종료"],
+  ];
+  return <section className={styles.referenceHome}>
+    <div className={styles.referenceHero}><div><h1>우리 동네<br /><em>혜택</em>을 켜는 시간</h1><p>지금 내 주변<br />받을 수 있는 혜택은?</p><small>500m 안의 할인 · 쿠폰 · 타임세일을<br />지금 바로 찾아보세요.</small></div><div className={styles.referenceStats}><article><i className={styles.statBlue}>▣</i><b>37</b><span>진행 혜택</span><small>지금 이용 가능</small></article><article><i className={styles.statPink}>▰</i><b>25</b><span>할인 쿠폰</span><small>다운로드 가능</small></article><article><i className={styles.statGreen}>♥</i><b>12</b><span>찜한 매장</span><small>새 혜택 3건</small></article></div></div>
+    <div className={styles.referenceFilters}><button className={styles.referenceLocation}>📍 <b>부천시 중동</b><span>변경 ›</span></button><button className={styles.referenceHot}>🔥 지금 이용 가능</button>{["오늘", "이번 주", "주말"].map((x) => <button key={x}>{x}</button>)}</div>
+    <div className={styles.referencePills}>{["500m", "1km", "3km", "5km"].map((x, i) => <button className={i === 0 ? styles.referenceSelected : ""} key={x}>{x}</button>)}</div><div className={styles.categoryPills}>{["🍚|한식", "🥩|고기", "🍻|술집", "🍗|치킨", "☕|카페", "🥟|중식", "🍣|일식", "•••|기타"].map((x) => { const [icon, label] = x.split("|"); return <button key={label}><i>{icon}</i><span>{label}</span></button>; })}</div>
+    <div className={styles.benefitTypes}>{["전체 혜택", "% 가격할인", "♙ 주류할인", "🎁 1+1 / 증정", "🎟 쿠폰", "♡ 서비스", "◷ 타임세일", "기타⌄"].map((x, i) => <button className={i === 0 ? styles.referenceSelected : ""} key={x}>{x}</button>)}</div>
+    <div className={styles.referenceHeading}><h2>🔥 지금 받을 수 있는 혜택</h2><a>전체보기 ›</a></div><div className={styles.referenceCards}>{cards.map(([name, offer, distance, image, badge]) => <article key={name}><div className={styles.referenceCardImage} style={{ backgroundImage: `url(${image})` }}><b>{badge}</b></div><div><h3>{name}<small>{distance}</small></h3><p>{offer}</p><footer>🟢 진행중　 ◷ <i>오늘 22:00까지</i></footer><nav><button>🎟 쿠폰받기</button><button>⌖ 길찾기</button><button>♡ 찜</button></nav></div></article>)}</div>
+    <div className={styles.referenceHeading}><h2>📍 주변 혜택 지도</h2></div><div className={styles.referenceMap}><div className={styles.fakeRoads}></div>{["🔥", "％", "🏪", "🎟", "🔥", "🏪", "％", "🏪", "🔥"].map((x, i) => <i key={i} style={{ left: `${12 + (i * 19) % 78}%`, top: `${18 + (i * 29) % 62}%` }}>{x}</i>)}<b className={styles.youAreHere}>●</b><span className={styles.mapLegend}>🟢 진행중　 🟠 곧 종료　 🔴 종료 임박　 🟣 쿠폰 사용 가능</span><button className={styles.mapMore}>지도 크게보기 ↗</button></div>
+    <div className={styles.referenceBottom}><article><h2>⭐ 내가 찜한 매장의 새 혜택</h2><p><img src="/sw_002/uploads/4-d0316f0d-1246-4265-bf63-23e9d91d0895.jpg" alt="" /> <b>육즙집</b><small>직화 닭발 2,000원 할인<br />180m</small><i>◷ 45분 남음</i></p><p><img src="/sw_002/uploads/5-cbc9b292-be9a-4218-9734-79855482d0dc.jpg" alt="" /> <b>당과원(디저트)</b><small>아메리카노 1+1</small><i>◷ 오늘 18:00까지</i></p></article><article><h2>📍 자주 가는 동네 <a>관리 ›</a></h2><div className={styles.neighborhood}><b>중동<small>현재 37개 혜택</small></b><b>상동<small>24개 혜택</small></b><b>역곡<small>18개 혜택</small></b></div><p className={styles.notice}>🔔 관심 동네에 새로운 혜택이 등록되면 알려드릴게요! <button>알림 설정하기</button></p></article></div>
+  </section>;
 }
 
 function SimpleScreen({ eyebrow, title, description, stores, onStore, empty }: { eyebrow: string; title: string; description: string; stores: MapStore[]; onStore: (store: MapStore) => void; empty?: string }) {
