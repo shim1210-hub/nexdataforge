@@ -147,6 +147,37 @@
   border-bottom: 1px solid #edf0f5;
 }
 
+.benefit button {
+  min-width: max-content;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.benefitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #26344c !important;
+}
+
+.benefitButton i {
+  color: #68758a;
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.benefit .benefitButton.active {
+  color: #26344c !important;
+  border-color: #246bfd;
+  background: #eef4ff;
+}
+
+.benefit .benefitButton.active i {
+  color: #246bfd;
+}
+
 
 
 .benefit button { height: 35px; padding: 0 22px; font-size: 12px; }
