@@ -66,6 +66,8 @@
 .stats article:nth-child(1) i { background: #246bfd; }
 .stats article:nth-child(2) i { background: #ff7a31; }
 .stats article:nth-child(3) i { border-radius: 50%; background: #39ad64; }
+.loginStat { cursor: pointer; }
+.loginStat b { font-size: 17px !important; }
 .stats b { font-size: 20px; line-height: 27px; font-weight: 800; letter-spacing: -.03em; }
 .stats span { grid-column: 2; font-size: 11px; line-height: 20px; font-weight: 500; color: #26344b; }
 .stats small { grid-column: 2; font-size: 11px; line-height: 16px; font-weight: 400; color: #99a3b3; }
@@ -138,7 +140,7 @@
 }
 
 .category i { font-size: 21px; line-height: 25px; font-style: normal; }
-.category .categoryPlaceholder { color: #7d8798; background: #f7f8fa; cursor: default; }
+.category .categoryPlaceholder { color: #7d8798; background: #f7f8fa; cursor: pointer; }
 
 .benefit {
   clear: both;
@@ -207,7 +209,8 @@
 .actions { display: flex; gap: 6px; margin-top: 12px; }
 .actions button { flex: 1; height: 30px; border: 1px solid #d5e1f4; border-radius: 9px; color: var(--blue); background: #fff; font-size: 10px; font-weight: 700; }
 .map { position: relative; height: 305px; overflow: hidden; border: 1px solid #dce4d9; border-radius: 14px; background: #e9eee9; }
-.map::after { content: ""; position: absolute; inset: 0; background: rgb(239 241 223 / 58%); }
+.mapCanvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.map::after { content: none; }
 .map::after, .pins, .center { display: none; }
 .map > div:first-child { position: absolute; inset: 0; z-index: 0; }
 .pins { position: absolute; z-index: 1; inset: 0; }
@@ -227,6 +230,13 @@
 .saved b { font-size: 12px; font-weight: 700; }
 .saved small { margin-top: 3px; color: #68758b; font-size: 10px; font-weight: 600; }
 .saved i { color: #fa5749; font-size: 10px; font-style: normal; font-weight: 700; }
+.savedPlaceholder { display: grid; place-items: center; width: 54px; height: 46px; border-radius: 9px; color: #7d8aa0; background: #edf2f8; font-size: 9px; font-weight: 800; }
+.savedLogin { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 4px 10px; padding: 11px 12px; border-radius: 11px; background: #f6f8fc; text-align: left; }
+.savedEmpty { display: grid; justify-items: center; gap: 4px; padding: 12px; border-radius: 11px; background: #f6f8fc; text-align: center; }
+.savedLogin > span { grid-row: 1 / 3; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #fff; background: #3db06b; font-size: 14px; }
+.savedLogin b, .savedEmpty b { color: #27344c; font-size: 11px; }
+.savedLogin small, .savedEmpty small { color: #7b8799; font-size: 9px; line-height: 1.35; }
+.savedLogin button { grid-column: 3; grid-row: 1 / 3; padding: 7px 11px; border: 0; border-radius: 8px; color: #fff; background: #246bfd; font-size: 9px; font-weight: 800; white-space: nowrap; cursor: pointer; }
 .neighborhood { display: flex; gap: 8px; }
 .neighborhood b { flex: 1; padding: 12px 9px; border: 1px solid #edf0f4; border-radius: 10px; font-size: 16px; }
 .neighborhood small { display: block; margin-top: 5px; color: #8793a6; font-size: 10px; font-weight: 700; }
@@ -279,3 +289,25 @@
 .benefit button::first-letter {
   color: #246bfd;
 }
+
+.locationModalBackdrop { position: fixed; z-index: 20; inset: 0; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 8vh 20px 40px; background: #17203366; }
+.locationModal { width: min(440px, 100%); max-height: 84vh; overflow-y: auto; border-radius: 18px; background: #fff; box-shadow: 0 24px 70px #17203333; }
+.locationModal header { display: flex; justify-content: space-between; padding: 22px; border-bottom: 1px solid #edf0f5; }
+.locationModal header::after { content: "드래그하여 이동"; position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%); color: #a5afbd; font-size: 9px; pointer-events: none; }
+.locationModal header span { color: #246bfd; font-size: 10px; font-weight: 800; }
+.locationModal header h2 { margin: 6px 0; font-size: 20px; }
+.locationModal header p { margin: 0; color: #7c8799; font-size: 12px; }
+.locationModal header button { border: 0; background: none; font-size: 24px; cursor: pointer; }
+.locationOptions { display: grid; gap: 8px; padding: 18px 22px 22px; }
+.locationOptions button { display: flex; justify-content: space-between; padding: 14px; border: 1px solid #e1e6ef; border-radius: 11px; background: #fff; color: #25334c; text-align: left; cursor: pointer; }
+.locationOptions button span { color: #9aa4b4; font-size: 11px; }
+.locationOptions .locationSelected { border-color: #246bfd; color: #246bfd; background: #f3f7ff; }
+.locationSearch { display: flex; gap: 8px; }
+.locationSearch input { flex: 1; height: 42px; padding: 0 12px; border: 1px solid #dce3ec; border-radius: 9px; font: inherit; }
+.locationSearch button { display: flex; align-items: center; justify-content: center; min-width: 74px; height: 42px; padding: 0 15px; border: 0; border-radius: 9px; color: #fff; background: #246bfd; font-weight: 700; line-height: 1; cursor: pointer; }
+.locationOptions > small { color: #8b95a5; font-size: 11px; }
+.locationHistoryHeading { display: block; margin-bottom: 4px; color: #7c8799 !important; font-size: 11px !important; font-weight: 700; }
+.locationMessage { display: block; min-height: 17px; margin-top: 8px; color: #d34b45 !important; font-size: 11px !important; }
+.locationHistory { display: grid; gap: 7px; margin-top: 12px; border-top: 1px solid #edf0f5; padding-top: 12px; }
+.locationHistoryRow { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; border-radius: 9px; background: #f6f8fb; color: #34445e; font-size: 12px; }
+.locationHistoryRow button { display: flex !important; align-items: center !important; justify-content: center !important; flex: 0 0 38px; width: 38px; height: 38px; margin-left: auto; padding: 0 0 3px !important; border: 1px solid #246bfd; border-radius: 8px; color: #246bfd; background: #fff; font-family: Arial, sans-serif; font-size: 25px; font-weight: 700; line-height: 38px !important; text-align: center; cursor: pointer; }

@@ -17,7 +17,7 @@ type EventPayload = {
 
 const globalForSw002 = globalThis as unknown as { sw002Pool?: Pool };
 const mapIcons = new Set(["HOT", "BEST", "COUPON", "FREE", "CLOSING_SOON"]);
-const eventTypes = new Set(["DISCOUNT", "SOJU", "TIME_SALE", "SERVICE", "RECOMMEND"]);
+const eventTypes = new Set(["E_001", "E_002", "E_003"]);
 
 function getPool() {
   const databaseUrl = process.env.DATABASE_URL;

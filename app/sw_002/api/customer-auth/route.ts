@@ -26,7 +26,7 @@ async function currentUser() {
 
 export async function GET() {
   try {
-    return Response.json({ user: await currentUser() });
+    return Response.json({ user: await currentUser() }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "로그인 상태를 확인하지 못했습니다." }, { status: 500 });
   }
@@ -72,5 +72,5 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   await clearCustomerSession();
-  return Response.json({ user: null });
+  return Response.json({ user: null }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -37,6 +37,7 @@ type StoreRecord = {
   zip_cd: string | null;
   address: string;
   address_detail: string | null;
+  jibun_address: string | null;
   latitude: string | null;
   longitude: string | null;
   opening_hours: { open?: string; close?: string } | null;
@@ -485,8 +486,8 @@ function ManagementPortalContent({ mode, onLogout, kakaoJavascriptKey }: { mode:
     </section>
     {modal === "menu" && <Modal title="새 메뉴 등록" onClose={() => setModal(null)}><form onSubmit={addMenu}><label>메뉴명<input name="name" required placeholder="메뉴명을 입력하세요" /></label><div className={styles.formRow}><label>가격<input name="price" type="number" required placeholder="0" /></label><label>분류<select name="category"><option>식사</option><option>요리</option><option>음료</option><option>디저트</option></select></label></div><ModalButtons close={() => setModal(null)} label="메뉴 등록" /></form></Modal>}
     {modal === "menu-edit" && editingMenu && <Modal title="음식메뉴 수정" onClose={() => setModal(null)}><form onSubmit={updateMenu}><label>메뉴명<input name="name" required defaultValue={editingMenu.name} /></label><div className={styles.formRow}><label>가격<input name="price" type="number" min="0" required defaultValue={editingMenu.price} /></label><label>분류<select name="category" defaultValue={editingMenu.category}><option>식사</option><option>요리</option><option>음료</option><option>디저트</option><option>기타</option></select></label></div><ModalButtons close={() => setModal(null)} label="수정 저장" /></form></Modal>}
-    {modal === "event" && <Modal title="이벤트 등록" onClose={() => setModal(null)}><form onSubmit={addEvent}><label>이벤트명<input name="title" required placeholder="이벤트 제목" /></label><div className={styles.formRow}><label>유형<select name="type"><option value="DISCOUNT">할인</option><option value="SERVICE">서비스</option><option value="TIME_SALE">타임세일</option><option value="RECOMMEND">추천</option><option value="SOJU">주류 행사</option></select></label><label>지도 아이콘<select name="icon"><option>HOT</option><option>BEST</option><option>COUPON</option><option>FREE</option><option>CLOSING_SOON</option></select></label></div><div className={styles.formRow}><label>시작일<input name="start" type="date" required /></label><label>종료일<input name="end" type="date" required /></label></div><ModalButtons close={() => setModal(null)} label="이벤트 등록" /></form></Modal>}
-    {modal === "event-edit" && editingEvent && <Modal title="이벤트 수정" onClose={() => setModal(null)}><form onSubmit={updateEvent}><label>이벤트명<input name="title" required defaultValue={editingEvent.title} /></label><div className={styles.formRow}><label>유형<select name="type" defaultValue={editingEvent.event_type}><option value="DISCOUNT">할인</option><option value="SERVICE">서비스</option><option value="TIME_SALE">타임세일</option><option value="RECOMMEND">추천</option><option value="SOJU">주류 행사</option></select></label><label>지도 아이콘<select name="icon" defaultValue={editingEvent.map_icon}><option>HOT</option><option>BEST</option><option>COUPON</option><option>FREE</option><option>CLOSING_SOON</option></select></label></div><div className={styles.formRow}><label>시작일<input name="start" type="date" required defaultValue={editingEvent.start_at.slice(0, 10)} /></label><label>종료일<input name="end" type="date" required defaultValue={editingEvent.end_at.slice(0, 10)} /></label></div><ModalButtons close={() => setModal(null)} label="수정 저장" /></form></Modal>}
+    {modal === "event" && <Modal title="이벤트 등록" onClose={() => setModal(null)}><form onSubmit={addEvent}><label>이벤트명<input name="title" required placeholder="이벤트 제목" /></label><div className={styles.formRow}><label>유형<select name="type"><option value="E_001">가격 할인</option><option value="E_002">주류 행사</option><option value="E_003">타임세일</option></select></label><label>지도 아이콘<select name="icon"><option>HOT</option><option>BEST</option><option>COUPON</option><option>FREE</option><option>CLOSING_SOON</option></select></label></div><div className={styles.formRow}><label>시작일<input name="start" type="date" required /></label><label>종료일<input name="end" type="date" required /></label></div><ModalButtons close={() => setModal(null)} label="이벤트 등록" /></form></Modal>}
+    {modal === "event-edit" && editingEvent && <Modal title="이벤트 수정" onClose={() => setModal(null)}><form onSubmit={updateEvent}><label>이벤트명<input name="title" required defaultValue={editingEvent.title} /></label><div className={styles.formRow}><label>유형<select name="type" defaultValue={editingEvent.event_type}><option value="E_001">가격 할인</option><option value="E_002">주류 행사</option><option value="E_003">타임세일</option></select></label><label>지도 아이콘<select name="icon" defaultValue={editingEvent.map_icon}><option>HOT</option><option>BEST</option><option>COUPON</option><option>FREE</option><option>CLOSING_SOON</option></select></label></div><div className={styles.formRow}><label>시작일<input name="start" type="date" required defaultValue={editingEvent.start_at.slice(0, 10)} /></label><label>종료일<input name="end" type="date" required defaultValue={editingEvent.end_at.slice(0, 10)} /></label></div><ModalButtons close={() => setModal(null)} label="수정 저장" /></form></Modal>}
     {modal === "coupon" && <Modal title="쿠폰 등록" onClose={() => setModal(null)}><CouponForm onSubmit={addCoupon} onClose={() => setModal(null)} /></Modal>}
     {modal === "coupon-edit" && editingCoupon && <Modal title="쿠폰 수정" onClose={() => setModal(null)}><CouponForm coupon={editingCoupon} onSubmit={updateCoupon} onClose={() => setModal(null)} /></Modal>}
     {modal === "push" && <Modal title="푸시 알림 발송" onClose={() => setModal(null)}><form onSubmit={(event) => { event.preventDefault(); setModal(null); notify("푸시 발송을 예약했습니다."); }}><label>알림 제목<input required placeholder="알림 제목" /></label><label>알림 내용<textarea required rows={4} placeholder="사용자에게 보낼 내용을 입력하세요" /></label><div className={styles.formRow}><label>대상<select><option>전체 사용자</option><option>1km 이내 사용자</option><option>쿠폰 관심 사용자</option></select></label><label>발송<select><option>즉시 발송</option><option>예약 발송</option></select></label></div><ModalButtons close={() => setModal(null)} label="발송 예약" /></form></Modal>}
@@ -521,6 +522,7 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
   const [zonecode, setZonecode] = useState(initialStore?.zip_cd ?? "");
   const [address, setAddress] = useState(initialStore?.address ?? "");
   const [detailAddress, setDetailAddress] = useState(initialStore?.address_detail ?? "");
+  const [jibunAddress, setJibunAddress] = useState(initialStore?.jibun_address ?? "");
   const [latitude, setLatitude] = useState(initialStore?.latitude ?? "");
   const [longitude, setLongitude] = useState(initialStore?.longitude ?? "");
   const [openTime, setOpenTime] = useState(initialStore?.opening_hours?.open ?? "11:30");
@@ -641,7 +643,7 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
         response = await fetch("/sw_002/api/stores", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: storeId, name, category, category2, description, phone, zipCd: zonecode, address, addressDetail: detailAddress, openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude }),
+          body: JSON.stringify({ id: storeId, name, category, category2, description, phone, zipCd: zonecode, address, addressDetail: detailAddress, jibunAddress, openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude }),
         });
       } catch {
         throw new Error("매장 저장 API에 연결하지 못했습니다. 서버가 최신 빌드로 실행 중인지 확인해 주세요.");
@@ -700,9 +702,10 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
 
     new postcodeApi.Postcode({
       oncomplete: (data) => {
-        const selectedAddress = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
+        const selectedAddress = data.roadAddress || data.address;
         setZonecode(data.zonecode);
         setAddress(selectedAddress || data.address);
+        setJibunAddress(data.jibunAddress || data.address);
         setLatitude("");
         setLongitude("");
         const geocoder = postcodeApi.maps?.services?.Geocoder ? new postcodeApi.maps.services.Geocoder() : null;
@@ -855,6 +858,18 @@ function MenuManager({ menus, setMenus, store, onAdd, onEdit, notify }: {
   </>;
 }
 function EventManager({ events, setEvents, store, onAdd, onEdit, notify }: { events: EventRecord[]; setEvents: React.Dispatch<React.SetStateAction<EventRecord[]>>; store: StoreRecord | null; onAdd: () => void; onEdit: (event: EventRecord) => void; notify: (message: string) => void }) {
+  const [eventTypeNames, setEventTypeNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!store) return;
+    void fetch(`/sw_002/api/events?storeId=${encodeURIComponent(store.id)}`, { cache: "no-store" })
+      .then((response) => response.json() as Promise<{ eventTypes?: EventTypeOption[] }>)
+      .then((result) => {
+        const names = Object.fromEntries((result.eventTypes ?? []).map((item) => [item.code, item.code_name]));
+        Object.assign(eventTypeLabels, names);
+        setEventTypeNames(names);
+      })
+      .catch(() => undefined);
+  }, [store]);
   async function deleteEvent(event: EventRecord) {
     if (!store) return notify("먼저 관리할 매장을 선택해 주세요.");
     if (!window.confirm(`${event.title} 이벤트를 삭제하시겠습니까?`)) return;

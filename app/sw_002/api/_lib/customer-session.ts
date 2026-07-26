@@ -2,7 +2,8 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { cookies } from "next/headers";
 import { Pool } from "pg";
 
-const cookieName = "sw002_customer_session";
+const cookieName = "sw002_customer_session_v2";
+const legacyCookieName = "sw002_customer_session";
 const sessionSeconds = 60 * 60 * 24 * 14;
 
 const globalForSw002Customer = globalThis as typeof globalThis & {
@@ -42,26 +43,19 @@ export async function setCustomerSession(userId: string) {
 }
 
 export async function clearCustomerSession() {
-  // The session is scoped to /sw_002, so deletion must use the same path.
-  // Calling delete() without it can leave the browser cookie active.
   const store = await cookies();
-  store.set(cookieName, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/sw_002",
-    maxAge: 0,
-    expires: new Date(0),
-  });
-  // Also clear the old root-scoped variant created by earlier builds.
-  store.set(cookieName, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 0,
-    expires: new Date(0),
-  });
+  for (const name of [cookieName, legacyCookieName]) {
+    for (const path of ["/sw_002", "/"]) {
+      store.set(name, "", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path,
+        maxAge: 0,
+        expires: new Date(0),
+      });
+    }
+  }
 }
 
 export async function getCustomerUserId() {

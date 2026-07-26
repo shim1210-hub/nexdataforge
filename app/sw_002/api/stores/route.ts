@@ -14,6 +14,7 @@ type StorePayload = {
   zipCd?: string;
   address?: string;
   addressDetail?: string;
+  jibunAddress?: string;
   openTime?: string;
   closeTime?: string;
   latitude?: number | null;
@@ -83,7 +84,7 @@ export async function GET() {
   try {
     const operator = await requireOperator();
     const result = await getPool().query(
-      `select id::text as id, name, category, category2, description, phone, zip_cd, address, address_detail,
+      `select id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail,
               latitude::text as latitude, longitude::text as longitude,
               opening_hours, status, is_map_visible,
               (select storage_path
@@ -122,12 +123,12 @@ export async function POST(request: Request) {
     if (!payload.id && operator.role === "STORE_MANAGER") {
       const created = await getPool().query(
         `insert into sw002_stores
-           (name, category, category2, description, phone, zip_cd, address, address_detail, opening_hours, latitude, longitude)
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11)
-         returning id::text as id, name, category, category2, description, phone, zip_cd, address, address_detail,
+           (name, category, category2, description, phone, zip_cd, road_address, road_address_detail, jibun_address, opening_hours, latitude, longitude)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12)
+         returning id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail,
                    latitude::text as latitude, longitude::text as longitude, opening_hours, status, is_map_visible`,
         [payload.name?.trim(), payload.category?.trim(), payload.category2?.trim() || null, payload.description?.trim() || null,
-         payload.phone?.trim() || null, payload.zipCd?.trim() || null, payload.address?.trim(), payload.addressDetail?.trim() || null,
+         payload.phone?.trim() || null, payload.zipCd?.trim() || null, payload.address?.trim(), payload.addressDetail?.trim() || null, payload.jibunAddress?.trim() || null,
          JSON.stringify({ open: payload.openTime, close: payload.closeTime }), coordinates.latitude, coordinates.longitude],
       );
       await getPool().query(
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
       payload.zipCd?.trim() || null,
       payload.address?.trim(),
       payload.addressDetail?.trim() || null,
+      payload.jibunAddress?.trim() || null,
       JSON.stringify({ open: payload.openTime, close: payload.closeTime }),
       coordinates.latitude,
       coordinates.longitude,
@@ -157,21 +159,21 @@ export async function POST(request: Request) {
       ? await getPool().query(
           `update sw002_stores
               set name = $1, category = $2, category2 = $3, description = $4, phone = $5,
-                  zip_cd = $6, address = $7, address_detail = $8, opening_hours = $9::jsonb,
-                  latitude = $10, longitude = $11,
+                  zip_cd = $6, road_address = $7, road_address_detail = $8, jibun_address = $9, opening_hours = $10::jsonb,
+                  latitude = $11, longitude = $12,
                   updated_at = now()
-            where id = $12
-        returning id::text as id, name, category, category2, description, phone, zip_cd, address, address_detail,
+            where id = $13
+        returning id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail,
                   latitude::text as latitude, longitude::text as longitude,
                   opening_hours, status, is_map_visible`,
           [...values, payload.id],
         )
       : await getPool().query(
           `insert into sw002_stores
-             (name, category, category2, description, phone, zip_cd, address, address_detail, opening_hours,
+             (name, category, category2, description, phone, zip_cd, road_address, road_address_detail, jibun_address, opening_hours,
               latitude, longitude)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11)
-        returning id::text as id, name, category, category2, description, phone, zip_cd, address, address_detail,
+           values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11, $12)
+        returning id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail,
                   latitude::text as latitude, longitude::text as longitude,
                   opening_hours, status, is_map_visible`,
           values,
