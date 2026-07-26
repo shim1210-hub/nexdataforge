@@ -84,7 +84,7 @@ export async function GET() {
   try {
     const operator = await requireOperator();
     const result = await getPool().query(
-      `select id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail,
+      `select id::text as id, name, category, category2, description, phone, zip_cd, road_address as address, road_address_detail as address_detail, jibun_address,
               latitude::text as latitude, longitude::text as longitude,
               opening_hours, status, is_map_visible,
               (select storage_path
@@ -183,6 +183,66 @@ export async function POST(request: Request) {
       throw new Error("저장할 매장 정보를 찾을 수 없습니다.");
     }
 
+    return Response.json({ store: result.rows[0] });
+  } catch (error) {
+    return Response.json({ error: getErrorMessage(error) }, { status: 400 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    await requireOperator();
+    const payload = (await request.json()) as StorePayload;
+    if (!payload.id || !/^\d+$/.test(payload.id)) throw new Error("수정할 매장 ID가 올바르지 않습니다.");
+    await assertStoreAccess(payload.id);
+
+    const fields = [
+      ["name", "name"], ["category", "category"], ["category2", "category2"],
+      ["description", "description"], ["phone", "phone"], ["zipCd", "zip_cd"],
+      ["address", "road_address"], ["addressDetail", "road_address_detail"],
+      ["jibunAddress", "jibun_address"], ["latitude", "latitude"], ["longitude", "longitude"],
+    ] as const;
+    const nullable = new Set(["category2", "description", "phone", "zipCd", "addressDetail", "jibunAddress"]);
+    const assignments: string[] = [];
+    const values: unknown[] = [];
+
+    for (const [key, column] of fields) {
+      if (!Object.prototype.hasOwnProperty.call(payload, key)) continue;
+      const rawValue = payload[key];
+      const value = key === "latitude" || key === "longitude"
+        ? Number(rawValue)
+        : String(rawValue ?? "").trim() || (nullable.has(key) ? null : "");
+      if ((key === "name" || key === "category" || key === "address") && !value) {
+        throw new Error("업체명, 업종, 주소는 비워둘 수 없습니다.");
+      }
+      if ((key === "latitude" || key === "longitude") && !Number.isFinite(value)) {
+        throw new Error("위도와 경도 값이 올바르지 않습니다.");
+      }
+      values.push(value);
+      assignments.push(`${column} = $${values.length}`);
+    }
+
+    const timeChanged = Object.prototype.hasOwnProperty.call(payload, "openTime")
+      || Object.prototype.hasOwnProperty.call(payload, "closeTime");
+    if (timeChanged) {
+      if (!payload.openTime || !payload.closeTime) throw new Error("영업 시작·종료 시간을 모두 입력해 주세요.");
+      values.push(JSON.stringify({ open: payload.openTime, close: payload.closeTime }));
+      assignments.push(`opening_hours = $${values.length}::jsonb`);
+    }
+    if (!assignments.length) throw new Error("변경된 매장 정보가 없습니다.");
+
+    values.push(payload.id);
+    const result = await getPool().query(
+      `update sw002_stores
+          set ${assignments.join(", ")}, updated_at = now()
+        where id = $${values.length}
+      returning id::text as id, name, category, category2, description, phone, zip_cd,
+                road_address as address, road_address_detail as address_detail, jibun_address,
+                latitude::text as latitude, longitude::text as longitude,
+                opening_hours, status, is_map_visible`,
+      values,
+    );
+    if (!result.rows[0]) throw new Error("수정할 매장 정보를 찾을 수 없습니다.");
     return Response.json({ store: result.rows[0] });
   } catch (error) {
     return Response.json({ error: getErrorMessage(error) }, { status: 400 });

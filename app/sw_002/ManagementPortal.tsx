@@ -627,32 +627,84 @@ function StoreEditor({ notify, storeList, setStoreList, storeId, setStoreId, kak
 
     try {
       if (!address.trim()) throw new Error("주소를 검색해 선택해 주세요.");
+      const addressChanged = !initialStore
+        || address.trim() !== (initialStore.address ?? "").trim()
+        || detailAddress.trim() !== (initialStore.address_detail ?? "").trim()
+        || jibunAddress.trim() !== (initialStore.jibun_address ?? "").trim()
+        || zonecode.trim() !== (initialStore.zip_cd ?? "").trim();
       const currentLatitude = Number(latitude);
       const currentLongitude = Number(longitude);
-      const coordinates = Number.isFinite(currentLatitude) && Number.isFinite(currentLongitude) && latitude && longitude
-        ? { latitude: currentLatitude, longitude: currentLongitude }
-        : coordinateLookupRef.current
+      const coordinates = addressChanged
+        ? coordinateLookupRef.current
           ? await coordinateLookupRef.current
-          : await resolveCoordinates(address);
+          : await resolveCoordinates(address)
+        : { latitude: currentLatitude, longitude: currentLongitude };
       coordinateLookupRef.current = null;
-      setLatitude(String(coordinates.latitude));
-      setLongitude(String(coordinates.longitude));
+      if (addressChanged) {
+        setLatitude(String(coordinates.latitude));
+        setLongitude(String(coordinates.longitude));
+      }
 
-      let response: Response;
-      try {
-        response = await fetch("/sw_002/api/stores", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: storeId, name, category, category2, description, phone, zipCd: zonecode, address, addressDetail: detailAddress, jibunAddress, openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude }),
+      const completePayload = {
+        name: name.trim(), category: category.trim(), category2: category2.trim(),
+        description: description.trim(), phone: phone.trim(), zipCd: zonecode.trim(),
+        address: address.trim(), addressDetail: detailAddress.trim(), jibunAddress: jibunAddress.trim(),
+        openTime, closeTime, latitude: coordinates.latitude, longitude: coordinates.longitude,
+      };
+      const changedPayload: Record<string, string | number> = {};
+      if (initialStore) {
+        const comparisons: Array<[string, string | number, string | number]> = [
+          ["name", completePayload.name, initialStore.name ?? ""],
+          ["category", completePayload.category, initialStore.category ?? ""],
+          ["category2", completePayload.category2, initialStore.category2 ?? ""],
+          ["description", completePayload.description, initialStore.description ?? ""],
+          ["phone", completePayload.phone, initialStore.phone ?? ""],
+          ["zipCd", completePayload.zipCd, initialStore.zip_cd ?? ""],
+          ["address", completePayload.address, initialStore.address ?? ""],
+          ["addressDetail", completePayload.addressDetail, initialStore.address_detail ?? ""],
+          ["jibunAddress", completePayload.jibunAddress, initialStore.jibun_address ?? ""],
+          ["openTime", completePayload.openTime, initialStore.opening_hours?.open ?? ""],
+          ["closeTime", completePayload.closeTime, initialStore.opening_hours?.close ?? ""],
+        ];
+        comparisons.forEach(([key, current, original]) => {
+          if (String(current).trim() !== String(original).trim()) changedPayload[key] = current;
         });
-      } catch {
+        if (addressChanged) {
+          changedPayload.latitude = coordinates.latitude;
+          changedPayload.longitude = coordinates.longitude;
+        }
+        if ("openTime" in changedPayload || "closeTime" in changedPayload) {
+          changedPayload.openTime = openTime;
+          changedPayload.closeTime = closeTime;
+        }
+      }
+
+      let result: { store?: StoreRecord; error?: string };
+      try {
+        if (initialStore && Object.keys(changedPayload).length === 0 && !imageFile) {
+          notify("변경된 매장 정보가 없습니다.");
+          return;
+        }
+        if (initialStore && Object.keys(changedPayload).length === 0) {
+          result = { store: initialStore };
+        } else {
+          const response = await fetch("/sw_002/api/stores", {
+            method: initialStore ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(initialStore
+              ? { id: storeId, ...changedPayload }
+              : { id: storeId, ...completePayload }),
+          });
+          result = await response.json() as { store?: StoreRecord; error?: string };
+          if (!response.ok || !result.store) {
+            throw new Error(result.error || "매장 정보를 저장하지 못했습니다.");
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error) throw error;
         throw new Error("매장 저장 API에 연결하지 못했습니다. 서버가 최신 빌드로 실행 중인지 확인해 주세요.");
       }
-      const result = await response.json() as { store?: StoreRecord; error?: string };
-
-      if (!response.ok || !result.store) {
-        throw new Error(result.error || "매장 정보를 저장하지 못했습니다.");
-      }
+      if (!result.store) throw new Error(result.error || "매장 정보를 저장하지 못했습니다.");
 
       let savedStore = { ...result.store, image_url: imageUrl };
       setStoreId(savedStore.id);
