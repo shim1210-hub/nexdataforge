@@ -72,24 +72,3 @@
 .referencePills{gap:9px}.referencePills button{width:76px;min-width:76px;height:49px;border-radius:12px;font-size:13px;font-weight:700}.categoryPills{gap:9px}.categoryPills button{width:76px;min-width:76px;height:60px;border-radius:12px;padding:6px 8px}.categoryPills i{font-size:22px;line-height:24px}.categoryPills span{font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:11px;font-weight:500}.benefitTypes{gap:9px;overflow:visible}.benefitTypes button{height:45px;border-radius:12px;padding:0 18px;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:12px;font-weight:600;letter-spacing:-.04em}.benefitTypes button:first-child{min-width:100px}.benefitTypes button:nth-child(2){min-width:100px}.benefitTypes button:nth-child(3){min-width:104px}.benefitTypes button:nth-child(4){min-width:116px}.benefitTypes button:nth-child(5){min-width:82px}.benefitTypes button:nth-child(6){min-width:90px}.benefitTypes button:nth-child(7){min-width:105px}.benefitTypes button:nth-child(8){min-width:70px}
 .benefitTypes button{height:32px}
 .benefitTypes button:first-child{min-width:120px}.benefitTypes button:nth-child(2){min-width:120px}.benefitTypes button:nth-child(3){min-width:125px}.benefitTypes button:nth-child(4){min-width:140px}.benefitTypes button:nth-child(5){min-width:98px}.benefitTypes button:nth-child(6){min-width:108px}.benefitTypes button:nth-child(7){min-width:126px}.benefitTypes button:nth-child(8){min-width:84px}
-
-@media (max-width: 640px) {
-  .shell { overflow-x: hidden; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-  .header { height: 58px; padding: 0 14px; }
-  .logo { gap: 8px; }
-  .logo i { width: 34px; height: 34px; border-radius: 10px; }
-  .logo strong { font-size: 17px; }
-  .headerActions button { height: 34px; padding: 0 11px; font-size: 11px; }
-  .mobileNav {
-    left: 10px;
-    right: 10px;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    height: 62px;
-    padding: 4px;
-    border-radius: 19px;
-  }
-  .mobileNav button { min-width: 0; border-radius: 15px; }
-  .mobileNav b { font-size: 14px; line-height: 15px; }
-  .mobileNav span { font-size: 9px; }
-  .siteFooter { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
-}
