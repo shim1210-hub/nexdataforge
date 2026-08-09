@@ -1,0 +1,4 @@
+import { BoardFrame } from "../_components/BoardFrame";
+import { DataStatePattern, PatternSection } from "../_components/PatternBoard";
+
+export default function DataStatesPage() { return <BoardFrame title="Data State Pattern Board" version="Pattern v1.0" status="Visual Preview: Available" scope="Tables, lists, and dashboards" component="Loading · Loaded · Empty · Error · Refresh"><p>Data states preserve the surrounding structure while communicating what is available, what is changing, and how to recover.</p><PatternSection title="Table state flow"><DataStatePattern /></PatternSection><PatternSection title="Accessibility Notes"><p>State changes are expressed with text and structure, refresh has an explicit action, and table headings remain available when data is loaded.</p></PatternSection></BoardFrame>; }

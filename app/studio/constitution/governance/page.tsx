@@ -1,0 +1,17 @@
+import Link from "next/link";
+import { ConstitutionLayout, ConstitutionSection } from "../_components/ConstitutionUI";
+
+export const metadata = { title: "Design Governance | Design Constitution" };
+
+const componentQuestions = ["기존 Component로 해결 가능한가?", "Variant 추가로 해결 가능한가?", "Pattern 수준의 문제인가?", "두 프로젝트 이상에서 재사용 가능한가?", "Mobile·접근성·상태를 정의했는가?"];
+const tokenRules = ["두 곳 이상에서 반복 사용", "명확한 의미와 Theme 대응", "기존 Token으로 표현 불가", "여러 프로젝트에서 재사용 가능"];
+
+export default function GovernancePage() {
+  return <ConstitutionLayout active="Governance" eyebrow="CONSTITUTION / GOVERNANCE" title="Design System Governance" summary="새 Component와 Token, Pattern, Template, 예외와 폐기 과정을 같은 Lifecycle과 책임으로 관리합니다." aside={<><strong>Lifecycle</strong><div className="governance-lifecycle">{["Draft", "In Review", "Ready", "Deprecated", "Removed"].map((item) => <span key={item}>{item}</span>)}</div></>}>
+    <ConstitutionSection kicker="COMPONENT" title="기존 항목을 먼저 확장합니다"><ul className="governance-question-list">{componentQuestions.map((item) => <li key={item}>{item}</li>)}</ul><div className="governance-required"><strong>신규 Component 필수 정의</strong><p>Purpose · Usage · Do Not Use · Variants · Sizes · States · Responsive Behavior · Accessibility · Tokens · Examples · Quality Gate</p></div></ConstitutionSection>
+    <ConstitutionSection kicker="TOKEN" title="의미 없는 Global 값의 증가를 막습니다"><div className="governance-columns"><div><h3>추가 기준</h3><ul>{tokenRules.map((rule) => <li key={rule}>{rule}</li>)}</ul></div><div><h3>금지</h3><ul><li>일회성 장식 값</li><li>기존 값과 거의 같은 중복 값</li><li>프로젝트 한 화면만 위한 Global Token</li></ul></div></div><div className="token-priority"><span>Semantic Token</span><b>→</b><span>Component Token</span><b>→</b><span>Raw Token</span><b>→</b><span>Temporary Local Value</span></div></ConstitutionSection>
+    <ConstitutionSection kicker="PATTERN & TEMPLATE" title="상태와 책임까지 재사용합니다"><div className="governance-rule-grid"><article><h3>Pattern Governance</h3><p>사용자 목표, 시작·진행·완료·실패, 복구와 키보드 흐름이 두 화면 이상에서 반복될 때 등록합니다.</p></article><article><h3>Template Governance</h3><p>Landmark, Page Title, Primary Action, 상태 영역과 반응형 구조가 반복될 때 Template로 승격합니다.</p></article><article><h3>Deprecation Policy</h3><p>대체 항목, Migration 경로, 마지막 지원 버전과 Removed 시점을 문서화합니다.</p></article><article><h3>Review Responsibility</h3><p>제안자는 근거를 제공하고, Reviewer는 Constitution과 Evidence를 확인하며, 제품 Owner가 예외를 승인합니다.</p></article></div></ConstitutionSection>
+    <ConstitutionSection kicker="EXCEPTION" title="예외는 허용하되 반드시 기록합니다" intro="접근성 특화, 하드웨어, 법·보안, 플랫폼 UX, 성능 또는 핵심 목적 충돌에 한해 검토합니다."><div className="exception-record"><div><strong>예외 대상</strong><span>Component / Pattern / Project route</span></div><div><strong>관련 조항</strong><span>Article number and rule</span></div><div><strong>이유와 영향</strong><span>Constraint, scope, user impact</span></div><div><strong>대안 검토</strong><span>Rejected alternatives</span></div><div><strong>상태</strong><span>Proposed · Approved · Temporary · Rejected · Expired</span></div><div><strong>재검토</strong><span>Owner and review date</span></div></div></ConstitutionSection>
+    <ConstitutionSection kicker="RELATED GUIDES" title="기존 운영 문서와 함께 사용합니다"><div className="constitution-split-links"><Link href="/studio/docs/contributing"><strong>Contribution Guide</strong><span>제안과 Review 책임</span></Link><Link href="/studio/docs/versioning"><strong>Versioning</strong><span>Lifecycle과 Migration</span></Link></div></ConstitutionSection>
+  </ConstitutionLayout>;
+}

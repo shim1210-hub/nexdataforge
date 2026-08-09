@@ -1,0 +1,2 @@
+import { ThemeBoard } from "../_components/FoundationBoard";
+export default function ThemesPage() { return <main className="foundation-token-page"><div className="foundation-token-shell"><a className="foundation-token-back" href="/studio/foundations">← Foundations</a><header className="foundation-token-header"><span className="foundation-token-eyebrow">NEXDATAFORGE / THEME FOUNDATION</span><h1>Theme foundation</h1><p>Light, dark, and high-contrast semantic token previews in a contained Studio surface.</p></header><ThemeBoard /></div></main>; }

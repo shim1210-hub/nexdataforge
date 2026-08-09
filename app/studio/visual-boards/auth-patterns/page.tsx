@@ -1,0 +1,4 @@
+import { BoardFrame } from "../_components/BoardFrame";
+import { AuthPattern, PatternSection } from "../_components/PatternBoard";
+
+export default function AuthPatternsPage() { return <BoardFrame title="Authentication Pattern Board" version="Pattern v1.0" status="Visual Preview: Available" scope="Account access and recovery" component="Sign in · Sign up · Recovery · Verification"><p>Authentication patterns make identity, validation, recovery, and session context clear without connecting to a real account or provider.</p><PatternSection title="Sign in and validation"><AuthPattern /></PatternSection><PatternSection title="Accessibility Notes"><p>Inputs have visible labels, required fields use native validation, password content is not exposed in examples, and error recovery remains next to the form.</p></PatternSection></BoardFrame>; }

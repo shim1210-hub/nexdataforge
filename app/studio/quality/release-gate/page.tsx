@@ -1,0 +1,2 @@
+import { ReleaseGate } from "../_components/QualityBoard";
+export default function ReleaseGatePage() { return <main className="quality-page"><div className="quality-shell"><a href="/studio/quality">← Quality</a><header className="quality-header"><span>RELEASE QUALITY GATE</span><h1>Evidence before Ready</h1><p>Release status reflects review evidence, not an automatically calculated score.</p></header><ReleaseGate /></div></main>; }

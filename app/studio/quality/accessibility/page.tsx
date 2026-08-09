@@ -1,0 +1,2 @@
+import { AccessibilityAudit } from "../_components/QualityBoard";
+export default function AccessibilityPage() { return <main className="quality-page"><div className="quality-shell"><a href="/studio/quality">← Quality</a><header className="quality-header"><span>ACCESSIBILITY AUDIT</span><h1>Accessibility review</h1><p>Practical checks for Studio components, patterns, templates, and AI surfaces.</p></header><AccessibilityAudit /></div></main>; }

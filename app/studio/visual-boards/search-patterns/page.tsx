@@ -1,0 +1,4 @@
+import { BoardFrame } from "../_components/BoardFrame";
+import { PatternSection, SearchPattern } from "../_components/PatternBoard";
+
+export default function SearchPatternsPage() { return <BoardFrame title="Search Pattern Board" version="Pattern v1.0" status="Visual Preview: Available" scope="Search and discovery flows" component="Basic Search · Suggestions · Filters · Results"><p>Search moves from intent to refinement to a useful result. The preview uses local data only and exposes empty, typing, and result states.</p><PatternSection title="Recommended search flow"><SearchPattern /></PatternSection><PatternSection title="Accessibility Notes"><p>Search has a persistent label, clear action, visible focus, keyboard-friendly result rows, and empty states that explain the next action.</p></PatternSection></BoardFrame>; }

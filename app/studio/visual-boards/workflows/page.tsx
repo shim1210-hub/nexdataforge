@@ -1,0 +1,4 @@
+import { BoardFrame } from "../_components/BoardFrame";
+import { PatternSection, WorkflowPattern } from "../_components/PatternBoard";
+
+export default function WorkflowsPage() { return <BoardFrame title="Workflow Pattern Board" version="Pattern v1.0" status="Visual Preview: Available" scope="Multi-step task flows" component="Wizard · Review · Save · Destructive · Success"><p>Workflows show progress, preserve user control, and make review and completion states explicit. All movement is local preview behavior.</p><PatternSection title="Step wizard and completion"><WorkflowPattern /></PatternSection><PatternSection title="Accessibility Notes"><p>Current, completed, and upcoming steps are visually distinct and labelled. The destructive action is separated from the primary workflow.</p></PatternSection></BoardFrame>; }

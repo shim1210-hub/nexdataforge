@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function DesignBookPage() { return <main className="studio-page"><div className="studio-shell"><Link href="/studio">← Studio</Link><p className="studio-eyebrow">DESIGN BOOK</p><h1>공통 디자인 철학</h1><p className="studio-lede">Experience First, Clarity Before Decoration, Trust by Design, AI as an Assistant를 모든 프로젝트의 출발점으로 삼습니다.</p><Link className="studio-button" href="/studio/projects/bidme">Bidme로 적용 보기</Link></div></main>; }

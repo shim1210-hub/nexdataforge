@@ -1,0 +1,4 @@
+import { BoardFrame } from "../_components/BoardFrame";
+import { OverlaySamples, Section } from "../_components/CoreBoard";
+
+export default function OverlayBoard() { return <BoardFrame title="Overlay Board" version="Component v1.0" status="Visual Preview: Available" scope="Core overlay patterns" component="Dialog · Drawer · Bottom Sheet · Tooltip · Menu"><p>Overlays focus attention while retaining context. Destructive confirmation is explicit, dismissal is available, and mobile surfaces stay inside the viewport.</p><Section title="Dialog, drawer, tooltip, and menu"><OverlaySamples /></Section><Section title="Accessibility Notes"><p>Dialog previews provide a labelled title, explicit close behavior, keyboard-safe actions, and sufficient contrast for danger actions.</p></Section></BoardFrame>; }

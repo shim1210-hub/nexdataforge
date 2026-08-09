@@ -1,0 +1,2 @@
+import { Checklists } from "../_components/QualityBoard";
+export default function ChecklistsPage() { return <main className="quality-page"><div className="quality-shell"><a href="/studio/quality">← Quality</a><header className="quality-header"><span>QUALITY CHECKLISTS</span><h1>Reusable review checklists</h1><p>Local review state only. Nothing is persisted to a database or account.</p></header><Checklists /></div></main>; }
