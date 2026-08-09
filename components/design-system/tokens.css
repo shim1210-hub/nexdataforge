@@ -100,4 +100,7 @@
   --ndf-control-touch-target: 44px;
   --ndf-skeleton-bg: #263c54;
   --ndf-skeleton-highlight: #40566d;
+  --ndf-overlay-backdrop: rgba(2, 11, 20, 0.72);
+  --ndf-overlay-surface: var(--ndf-surface);
+  --ndf-overlay-max-width: 560px;
 }

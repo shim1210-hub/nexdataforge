@@ -49,7 +49,8 @@ export function TabList({ label, className, onKeyDown, ...props }: TabListProps)
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     onKeyDown?.(event);
     if (event.defaultPrevented) return;
-    if (!(["ArrowLeft", "ArrowRight", "Home", "End"] as string[]).includes(event.key)) return;
+    const key = event.key === "Left" ? "ArrowLeft" : event.key === "Right" ? "ArrowRight" : event.key;
+    if (!(["ArrowLeft", "ArrowRight", "Home", "End"] as string[]).includes(key)) return;
 
     const tabs = Array.from(
       event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'),
@@ -59,10 +60,10 @@ export function TabList({ label, className, onKeyDown, ...props }: TabListProps)
 
     event.preventDefault();
     let nextIndex = currentIndex;
-    if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
-    if (event.key === "Home") nextIndex = 0;
-    if (event.key === "End") nextIndex = tabs.length - 1;
+    if (key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    if (key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
+    if (key === "Home") nextIndex = 0;
+    if (key === "End") nextIndex = tabs.length - 1;
     tabs[nextIndex].focus();
     tabs[nextIndex].click();
   }

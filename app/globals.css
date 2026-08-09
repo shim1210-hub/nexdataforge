@@ -5491,3 +5491,8 @@ a {
   .footer-bottom, .footer-legal { width: 100%; align-items: flex-start; gap: 10px; }
   .footer-legal { display: flex; flex-direction: column; }
 }
+
+.quality-badge.manual-required {
+  color: #f6d18a;
+  background: #4a371b;
+}
