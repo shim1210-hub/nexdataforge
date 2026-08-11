@@ -1,6 +1,22 @@
 # PriceGo Design System Adoption Pilot
 
-Status: Analysis complete · Stage 15 implementation preparation
+Status: Stage 15–23 adoption evidence complete · native device verification remains pending
+
+Evidence scope: This cumulative record contains the initial read-only analysis and the subsequent Stage 15–23 pilot results. Earlier sections retain their stage-time wording as historical evidence; the status above is the current disposition.
+
+## Adoption Governance Rule
+
+**Design System Adoption != Product Redesign**
+
+- Protect the existing product information architecture.
+- Protect existing navigation, business logic, and user flows.
+- Prefer cross-screen consistency over isolated screen optimization.
+- Do not change screen structure arbitrarily merely to demonstrate Design System adoption.
+- Preserve product-specific identity.
+- Center adoption changes on tokens, component contracts, accessibility, and consistency.
+- Treat React Native adoption as a product-local adapter, not direct reuse of web components.
+
+PriceGo Home confirmed this rule in practice: the adopted Quick Start layout returned from an inconsistent `2×2` treatment to the established `4×1` structure so that adoption preserved cross-screen behavior instead of becoming a redesign.
 
 This document records a read-only analysis of `C:\dev\pricego`. No PriceGo source, route, storage key, navigation order, calculation logic, OCR behavior, or AI behavior is changed in this stage.
 
