@@ -1,4 +1,5 @@
 import type { Service } from "@/data/services";
+import styles from "@/components/home/Home.module.css";
 
 interface ServiceCardProps {
   service: Service;
@@ -6,32 +7,31 @@ interface ServiceCardProps {
 
 export default function ServiceCard({ service }: ServiceCardProps) {
   return (
-    <article className="service-card">
-      <div className="service-card-top">
-        <span className="service-icon" aria-hidden="true">
+    <article className={styles.serviceCard}>
+      <div className={styles.serviceCardTop}>
+        <span className={styles.serviceIcon} aria-hidden="true">
           {service.icon}
         </span>
 
-        <span className="status-badge">{service.status}</span>
+        <span className={styles.statusBadge}>{service.status}</span>
       </div>
 
-      <p className="service-id">{service.id}</p>
       <h3>{service.title}</h3>
-      <p className="service-description">{service.description}</p>
+      <p className={styles.serviceDescription}>{service.description}</p>
 
-      <ul className="feature-list">
+      <ul className={styles.featureList}>
         {service.features.map((feature) => (
           <li key={feature}>{feature}</li>
         ))}
       </ul>
 
       {service.enabled ? (
-        <a className="service-link" href={service.href}>
+        <a className={styles.serviceLink} href={service.href}>
           서비스 이용하기 →
         </a>
       ) : (
-        <span className="service-link service-link-disabled">
-          서비스 준비 중
+        <span className={`${styles.serviceLink} ${styles.serviceLinkDisabled}`}>
+          준비 중
         </span>
       )}
     </article>

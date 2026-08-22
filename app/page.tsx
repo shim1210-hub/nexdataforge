@@ -4,13 +4,14 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import ServiceSection from "@/components/ServiceSection";
 import TechSection from "@/components/TechSection";
+import styles from "@/components/home/Home.module.css";
 
 export default function HomePage() {
   return (
-    <>
+    <div className={styles.homeShell}>
       <Header />
 
-      <main>
+      <main className={styles.homeMain}>
         <HeroSection />
         <AboutSection />
         <ServiceSection />
@@ -18,6 +19,6 @@ export default function HomePage() {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

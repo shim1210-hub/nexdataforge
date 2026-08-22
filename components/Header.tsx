@@ -1,20 +1,18 @@
+import styles from "@/components/home/Home.module.css";
+
 export default function Header() {
   return (
-    <header className="site-header">
-      <div className="container header-inner">
-        <a className="logo" href="#top" aria-label="NexDataForge 홈">
-          <span className="logo-mark">N</span>
+    <header className={styles.header}>
+      <div className={`${styles.container} ${styles.headerInner}`}>
+        <a className={styles.logo} href="#top" aria-label="NexDataForge 홈">
+          <span className={styles.logoMark}>N</span>
           <span>NexDataForge</span>
         </a>
 
-        <p className="header-beta">
-          현재 개발 중인 개인 테스트 웹페이지입니다. <span>Beta</span>
-        </p>
-
-        <nav className="main-nav" aria-label="주요 메뉴">
-          <a href="#about">소개</a>
-          <a href="#services">서비스</a>
-          <a href="#technology">기술</a>
+        <nav className={styles.nav} aria-label="주요 메뉴">
+          <a href="#about">About</a>
+          <a href="#services">Services</a>
+          <a href="#technology">Technology</a>
         </nav>
       </div>
     </header>

@@ -1,73 +1,71 @@
+import styles from "@/components/home/Home.module.css";
+
 const footerColumns = [
   {
     title: "Services",
     links: [
-      { label: "Public Data Platform", href: "#services" },
-      { label: "Data Visualization", href: "#services" },
-      { label: "API Integration", href: "#services" },
-      { label: "Service Roadmap", href: "#technology" },
+      { label: "DongneOn", href: "/sw_002" },
+      { label: "Util", href: "/sw_005" },
+      { label: "AI Website Factory", href: "/sw_006" },
+      { label: "MetaSys", href: "/sw_007" },
+      { label: "Data Analytics", href: "/sw_003" },
+      { label: "AI Assistant · Coming Soon" },
     ],
   },
   {
-    title: "Resources",
-    links: [
-      { label: "Technology Stack", href: "#technology" },
-      { label: "Open Data Strategy", href: "#about" },
-      { label: "Project Notes", href: "#about" },
-      { label: "Contact", href: "mailto:hello@nexdataforge.com" },
-    ],
-  },
-  {
-    title: "Company",
+    title: "Explore",
     links: [
       { label: "About", href: "#about" },
       { label: "Services", href: "#services" },
       { label: "Technology", href: "#technology" },
-      { label: "Status", href: "#top" },
     ],
+  },
+  {
+    title: "Contact",
+    links: [{ label: "hello@nexdataforge.com", href: "mailto:hello@nexdataforge.com" }],
   },
 ];
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
-      <div className="container footer-main">
-        <div className="footer-brand">
-          <a className="footer-logo" href="#top" aria-label="NexDataForge 홈">
-            <span className="footer-logo-mark">N</span>
+    <footer className={styles.footer}>
+      <div className={`${styles.container} ${styles.footerMain}`}>
+        <div className={styles.footerBrand}>
+          <a className={styles.footerLogo} href="#top" aria-label="NexDataForge 홈">
+            <span className={styles.footerLogoMark}>N</span>
             <span>NexDataForge</span>
           </a>
 
           <p>
-            공공 데이터와 웹 서비스를 연결해 일상에 필요한 데이터 제품을
-            설계하고 구현합니다.
+            AI와 데이터 기술로
+            <br />
+            실용적인 웹 서비스를 만듭니다.
           </p>
-
-          <div className="footer-status" aria-label="Service status">
-            <span className="footer-status-dot" />
-            New services in active planning
-          </div>
         </div>
 
-        <div className="footer-links">
+        <div className={styles.footerLinks}>
           {footerColumns.map((column) => (
-            <nav aria-label={column.title} className="footer-column" key={column.title}>
+            <nav aria-label={column.title} className={styles.footerColumn} key={column.title}>
               <h3>{column.title}</h3>
 
-              {column.links.map((link) => (
-                <a href={link.href} key={link.label}>
-                  {link.label}
-                </a>
-              ))}
+              {column.links.map((link) =>
+                link.href ? (
+                  <a href={link.href} key={link.label}>
+                    {link.label}
+                  </a>
+                ) : (
+                  <span key={link.label}>{link.label}</span>
+                ),
+              )}
             </nav>
           ))}
         </div>
       </div>
 
-      <div className="container footer-bottom">
-        <p>&copy; {new Date().getFullYear()} NexDataForge. All rights reserved.</p>
+      <div className={`${styles.container} ${styles.footerBottom}`}>
+        <p>&copy; 2026 NexDataForge</p>
 
-        <div className="footer-legal">
+        <div className={styles.footerLegal}>
           <a href="#top">Back to top</a>
           <a href="mailto:hello@nexdataforge.com">hello@nexdataforge.com</a>
         </div>

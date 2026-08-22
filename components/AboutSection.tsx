@@ -1,3 +1,5 @@
+import styles from "@/components/home/Home.module.css";
+
 const values = [
   {
     number: "01",
@@ -21,10 +23,10 @@ const values = [
 
 export default function AboutSection() {
   return (
-    <section id="about" className="section about-section">
-      <div className="container">
-        <div className="section-heading">
-          <p className="section-label">ABOUT NEXDATAFORGE</p>
+    <section id="about" className={`${styles.section} ${styles.aboutSection}`}>
+      <div className={styles.container}>
+        <div className={styles.sectionHeading}>
+          <p className={styles.sectionLabel}>ABOUT NEXDATAFORGE</p>
           <h2>데이터에서 시작해 서비스로 완성합니다.</h2>
           <p>
             NexDataForge는 데이터 수집, 저장, 분석, 시각화와 웹서비스
@@ -32,9 +34,9 @@ export default function AboutSection() {
           </p>
         </div>
 
-        <div className="value-grid">
+        <div className={styles.valueGrid}>
           {values.map((value) => (
-            <article className="value-card" key={value.number}>
+            <article className={styles.valueCard} key={value.number}>
               <span>{value.number}</span>
               <h3>{value.title}</h3>
               <p>{value.description}</p>
