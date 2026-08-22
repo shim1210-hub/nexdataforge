@@ -35,7 +35,15 @@
   gap: 28px;
 }
 
+.brandGroup {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+}
+
 .logo {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: baseline;
   color: #3a1118;
@@ -58,7 +66,28 @@
   letter-spacing: 0;
 }
 
+.siteNote {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  margin: 0;
+  color: #7f6d66;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.siteNote::before {
+  width: 1px;
+  height: 16px;
+  margin-right: 16px;
+  content: "";
+  background: rgba(80, 30, 35, 0.16);
+}
+
 .nav {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 32px;
@@ -723,6 +752,10 @@
     width: 30px;
     height: 30px;
     margin-right: 8px;
+  }
+
+  .siteNote {
+    display: none;
   }
 
   .nav {
